@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const dataRoutes = require('./routes/dataRoutes.js');
+const dataRoutes = require('./routes/dataRoutes');
 
 require('dotenv').config();
 

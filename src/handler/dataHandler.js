@@ -1,9 +1,9 @@
 const pool = require('../config/db');
 
-const getData = async(req, res) => {
+const getData = async (req, res) => {
   const queryGet = {
-    text : 'SELECT * FROM data',
-  }
+    text: 'SELECT * FROM data',
+  };
   const data = await pool.query(queryGet);
   console.log(data.rows);
 
@@ -11,8 +11,8 @@ const getData = async(req, res) => {
     status: 'success',
     data: data.rows,
   });
-}
+};
 
-module.exports = { 
+module.exports = {
   getData,
 };
