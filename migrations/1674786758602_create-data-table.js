@@ -10,7 +10,7 @@ exports.up = ((pgm) => {
       notNull: true,
     },
     tahun: {
-      type: 'INTEGER(4)',
+      type: 'INTEGER',
       notNull: true,
     },
     no_proyek: {
@@ -30,16 +30,52 @@ exports.up = ((pgm) => {
       notNull: true,
     },
     nm_rekanan: {
-      type: 'TEXT',
+      type: 'VARCHAR(100)',
       notNull: true,
     },
-    nm_proye: {
-      type: 'TEXT',
-      notNull: true,
+    nm_kota: {
+      type: 'VARCHAR(100)',
+      // notNull: true,
     },
-    nm_pro: {
+    nm_lokasi: {
+      type: 'VARCHAR(100)',
+      // notNull: true,
+    },
+    nilai: {
+      type: 'BIGINT',
+      // notNull: true,
+    },
+    plan: {
+      type: 'FLOAT',
+      // notNull: true,
+    },
+    real: {
+      type: 'FLOAT',
+      // notNull: true,
+    },
+    deviasi: {
+      type: 'FLOAT',
+      // notNull: true,
+    },
+    tgl_selesai: {
+      type: 'TIMESTAMP',
+      // notNull: true,
+    },
+    status: {
+      type: 'VARCHAR(50)',
+      // notNull: true,
+    },
+    tgl_bast1: {
+      type: 'TIMESTAMP',
+      // notNull: true,
+    },
+    batas_retensi: {
+      type: 'TIMESTAMP',
+      // notNull: true,
+    },
+    keterangan: {
       type: 'TEXT',
-      notNull: true,
+      // notNull: true,
     },
   });
 });
