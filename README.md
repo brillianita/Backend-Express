@@ -62,7 +62,7 @@ SOON
       `page_size` stand for how many kontraktor that can be shown in one page.  
       `current_page` stand for kontraktor current page. 
      - body response:
-      ```json
+     ```json
       {
           "status": "Success",
           "data": [
@@ -83,7 +83,7 @@ SOON
               "current_page": "1"
           }
       }
-
+    ```  
   ---- **_Search_** ----    
   - endpoint: `/kontraktor?search=brillianita`  
   will filter the kontraktors and only show the kontraktor within `search` Brillianita 
@@ -165,7 +165,7 @@ SOON
       `page_size` stand for how many admin that can be shown in one page.  
       `current_page` stand for admin current page. 
      - body response:
-      ```json
+     ```json
       {
           "status": "Success",
           "data": [
@@ -183,7 +183,7 @@ SOON
               "current_page": "1"
           }
       }
-
+    ```
   ---- **_Search_** ----    
   - endpoint: `/admin?search=brillianita`  
   will filter the admin and only show the admin within `search` Brillianita 
@@ -196,17 +196,17 @@ SOON
     - token: `accessToken`
   - body response: 
   ```json
-  {
-      "status": "success",
-      "data`": [
-          {
-            "id": 2,
-            "nama": "ditaa",
-            "sap": "873538959",
-            "seksi": "pengadaan"
-          }
-      ]
-  }
+    {
+        "status": "success",
+        "data": [
+            {
+                "id": 2,
+                "nama": "ditaa",
+                "sap": "873538959",
+                "seksi": "pengadaan"
+            }
+        ]
+    }
   ```
 - Insert New admin
   - - method: `POST`
