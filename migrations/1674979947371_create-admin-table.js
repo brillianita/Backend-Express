@@ -9,7 +9,7 @@ exports.up = ((pgm) => {
       type: 'VARCHAR',
       notNull: true,
     },
-    SAP: {
+    sap: {
       type: 'VARCHAR',
       notNull: true,
     },

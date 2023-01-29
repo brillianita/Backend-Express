@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const dataRoutes = require('./routes/dataRoutes');
-const userRoutes = require('./routes/kontraktorRoutes');
+const kontraktorRoutes = require('./routes/kontraktorRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 require('dotenv').config();
 
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 });
 
 app.use(dataRoutes);
-app.use(userRoutes);
+app.use(kontraktorRoutes);
+app.use(adminRoutes);
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));
