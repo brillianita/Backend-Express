@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const dataRoutes = require('./routes/dataRoutes');
+const kontraktorRoutes = require('./routes/kontraktorRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 require('dotenv').config();
 
@@ -13,6 +15,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+const bodyParser = require("body-parser"); //dont needed it yet. use for post verb
+app.use(bodyParser.json());
+
+
 const teks = 'Tonasa';
 
 app.get('/', (req, res) => {
@@ -20,5 +26,7 @@ app.get('/', (req, res) => {
 });
 
 app.use(dataRoutes);
+app.use(kontraktorRoutes);
+app.use(adminRoutes);
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));
