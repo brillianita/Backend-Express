@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const dataRoutes = require('./routes/dataRoutes');
 
 require('dotenv').config();
 
@@ -17,5 +18,7 @@ const teks = 'Tonasa';
 app.get('/', (req, res) => {
   res.status(200).json(teks);
 });
+
+app.use(dataRoutes);
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));

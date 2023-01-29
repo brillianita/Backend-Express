@@ -1,5 +1,5 @@
 // Import database postgresql modul
-const { Pool } = require('pg').Pool;
+const { Pool } = require('pg');
 
 // set up database connection
 const pool = new Pool({
