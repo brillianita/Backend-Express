@@ -3,47 +3,42 @@ const pool = require('../config/db');
 
 const getAllAdmin = async (req, res) => {
   const { pageSize, currentPage, search } = req.query;
-  // let result;
 
-  console.log(search);
   try {
     let qFilter;
     if (!search) {
       qFilter = 'SELECT * FROM admin ORDER BY LOWER (sap) ASC';
     } else {
-      qFilter = `SELECT * FROM admin WHERE nama LIKE LOWER('%${search}%') OR sap LIKE LOWER('%${search}%') OR seksi LIKE LOWER('%${search}%') ORDER BY LOWER(sap) ASC`;
+      qFilter = `SELECT * FROM admin WHERE LOWER(nama) LIKE LOWER('%${search}%') OR LOWER(sap) LIKE LOWER('%${search}%') OR LOWER(seksi) LIKE LOWER('%${search}%') ORDER BY LOWER(sap) ASC`;
     }
+
     let result = await pool.query(qFilter);
 
     if (pageSize && currentPage) {
       const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
-      console.log('Total Rows:', totalRows.rows[0].count);
       const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
       const offset = (currentPage - 1) * pageSize;
       result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(sap) ASC LIMIT ${pageSize} OFFSET ${offset};`);
-      console.log('ini hasil qFilter', result.rows);
-
       return res.status(200).send({
-        status: 'Success',
+        status: 'success',
         data: result.rows,
         page: {
-          pageSize,
-          totalRows: totalRows.rows[0].count,
-          totalPages,
-          currentPage,
+          page_size: pageSize,
+          total_rows: totalRows.rows[0].count,
+          total_pages: totalPages,
+          current_page: currentPage,
         },
       });
-    } else {
-      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(sap) ASC;`);
-
-      return res.status(200).send({
-        status: 'Success',
-        data: result.rows,
-      });
     }
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(sap) ASC;`);
+
+    return res.status(200).send({
+      status: 'success',
+      data: result.rows,
+    });
   } catch (e) {
     return res.status(500).send({
-      status: 'failed',
+      status: 'fail',
       // message: "Sorry there was a failure on our server."
       message: e.message,
     });
@@ -63,22 +58,27 @@ const getAdminById = async (req, res) => {
     // if (!result.rows.length) {
     //     throw new NotFoundError(`User Not Found!`);
     // }
+    // Check if data is null
+    // if (!result.rows.length) {
+    //     throw new NotFoundError(`User Not Found!`);
+    // }
 
     return res.status(200).send({
-      status: 'Success',
+      status: 'success',
       data: result.rows,
+
     });
   } catch (e) {
     // console.log(e);
     // if (e instanceof ClientError) {
     //     res.status(e.statusCode).send({
-    //         status: 'failed',
+    //         status: 'fail',
     //         message: e.message,
     //     })
     // }
     return res.status(500).send({
-      status: 'failed',
-      message: 'Sorry there was a failure on our server',
+      status: 'fail',
+      message: 'Sorry there was a failure on our server.',
     });
   }
 };
@@ -86,19 +86,24 @@ const getAdminById = async (req, res) => {
 // Create user
 const createAdmin = async (req, res) => {
   const {
-    nama, sap, seksi, username, password, confirmPassword,
+    nama,
+    sap,
+    seksi,
+    username,
+    password,
+    confirmPassword,
   } = req.body;
-  const hashPassword = bcrypt.hashSync(password, 8);
 
-  if (password !== confirmPassword) {
-    return res.status(400).send({
-      status: 'Failed',
-      message: 'Password and Confirm Password does not match',
-    });
-  }
   try {
+    const hashPassword = bcrypt.hashSync(password, 8);
+    if (password !== confirmPassword) {
+      return res.status(400).send({
+        status: 'fail',
+        message: 'Password and Confirm Password does not match',
+      });
+    }
     const qAdmin = {
-      text: 'INSERT INTO admin (id, nama, sap, seksi) VALUES (DEFAULT, $1, $2, $3) RETURNING *;',
+      text: 'INSERT INTO admin (id, nama, sap, seksi) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
       values: [nama, sap, seksi],
     };
     const resAdmin = await pool.query(qAdmin);
@@ -109,13 +114,13 @@ const createAdmin = async (req, res) => {
 
     await pool.query(qUser);
     // await pool.query(qUser);
-    res.status(201).json({
-      status: 'Success',
+    return res.status(201).json({
+      status: 'success',
       message: 'Register Successfull!',
     });
   } catch (e) {
-    res.status(400).json({
-      status: 'Failed',
+    return res.status(400).json({
+      status: 'fail',
       message: e.message,
     });
   }

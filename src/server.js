@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser'); // dont needed it yet. use for post verb
+const bodyParser = require('body-parser');
 const dataRoutes = require('./routes/dataRoutes');
 const kontraktorRoutes = require('./routes/kontraktorRoutes');
 const adminRoutes = require('./routes/adminRoutes');
