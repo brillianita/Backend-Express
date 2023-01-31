@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const dataRoutes = require('./routes/dataRoutes');
 const kontraktorRoutes = require('./routes/kontraktorRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 require('dotenv').config();
 
@@ -27,5 +28,6 @@ app.get('/', (req, res) => {
 app.use(dataRoutes);
 app.use(kontraktorRoutes);
 app.use(adminRoutes);
+app.use(authRoutes);
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));
