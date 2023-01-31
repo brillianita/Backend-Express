@@ -43,7 +43,7 @@ SOON
     - body response:
     ```json
     {
-        "status": "Success",
+        "status": "success",
         "data": [{
             "id": 6,
             "jenis_pekerjaan": "electrical",
@@ -57,14 +57,14 @@ SOON
     }
     ```
   ---- **_Pagination_** ----     
-     - endpoint: `/kontraktor?page_size=10&current_page=1`  
+     - endpoint: `/kontraktor?pageSize=10&currentPage=1`  
       will show 10 first kontraktors.  
-      `page_size` stand for how many kontraktor that can be shown in one page.  
-      `current_page` stand for kontraktor current page. 
+      `pageSize` stand for how many kontraktor that can be shown in one page.  
+      `currentPage` stand for kontraktor current page. 
      - body response:
      ```json
       {
-          "status": "Success",
+          "status": "success",
           "data": [
               {
                 "id": 6,
@@ -77,10 +77,10 @@ SOON
               },...
           ],
               "page": {
-              "page_size": "2",
+              "pageSize": "2",
               "total_rows": "19",
               "total_pages": 10,
-              "current_page": "1"
+              "currentPage": "1"
           }
       }
     ```  
@@ -120,12 +120,12 @@ SOON
   - body request:
   ```json
     {
-        "jenis_pekerjaan": string | required,
-        "nama_pekerjaan": string | required,
-        "nomor_kontrak": string | required,
-        "lokasi_pekerjaan": string | required,
-        "tgl_mulai": timestamp,
-        "tgl_selesai": timestamp,
+        "jenisPekerjaan": string | required,
+        "namaPekerjaan": string | required,
+        "nomorKontrak": string | required,
+        "lokasiPekerjaan": string | required,
+        "tglMulai": timestamp,
+        "tglSelesai": timestamp,
         "username": string | required,
         "password": string | required,
         "confirmPassword": string | required
@@ -149,7 +149,7 @@ SOON
     - body response:
     ```json
     {
-        "status": "Success",
+        "status": "success",
         "data": [{
             "id": 2,
             "nama": "ditaa",
@@ -160,14 +160,14 @@ SOON
     }
     ```
   ---- **_Pagination_** ----     
-     - endpoint: `/admin?page_size=10&current_page=1`  
+     - endpoint: `/admin?pageSize=10&currentPage=1`  
       will show 10 first admin.  
-      `page_size` stand for how many admin that can be shown in one page.  
-      `current_page` stand for admin current page. 
+      `pageSize` stand for how many admin that can be shown in one page.  
+      `currentPage` stand for admin current page. 
      - body response:
      ```json
       {
-          "status": "Success",
+          "status": "success",
           "data": [
               {
                 "id": 2,
@@ -177,10 +177,10 @@ SOON
               },...
           ],
               "page": {
-              "page_size": "2",
+              "pageSize": "2",
               "total_rows": "19",
               "total_pages": 10,
-              "current_page": "1"
+              "currentPage": "1"
           }
       }
     ```
