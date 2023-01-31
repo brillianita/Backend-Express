@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const dataRoutes = require('./routes/dataRoutes');
 const kontraktorRoutes = require('./routes/kontraktorRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -15,9 +16,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-const bodyParser = require("body-parser"); //dont needed it yet. use for post verb
 app.use(bodyParser.json());
-
 
 const teks = 'Tonasa';
 
