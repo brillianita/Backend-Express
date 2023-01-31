@@ -1,6 +1,6 @@
 exports.up = ((pgm) => {
   pgm.createTable('real', {
-    id_plan: {
+    id_real: {
       type: 'SERIAL',
       notNull: true,
       primaryKey: true,
@@ -11,7 +11,7 @@ exports.up = ((pgm) => {
     },
     arr_value: {
       type: 'TEXT',
-      notNull: true,
+      // notNull: true,
     },
   });
   pgm.addConstraint(

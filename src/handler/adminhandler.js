@@ -58,6 +58,10 @@ const getAdminById = async (req, res) => {
     // if (!result.rows.length) {
     //     throw new NotFoundError(`User Not Found!`);
     // }
+    // Check if data is null
+    // if (!result.rows.length) {
+    //     throw new NotFoundError(`User Not Found!`);
+    // }
 
     return res.status(200).send({
       status: 'success',
@@ -103,14 +107,12 @@ const createAdmin = async (req, res) => {
       values: [nama, sap, seksi],
     };
     const resAdmin = await pool.query(qAdmin);
-
     const qUser = {
       text: 'INSERT INTO users (id, admin_id, username, password, role) VALUES (DEFAULT, $1, $2, $3, $4);',
       values: [resAdmin.rows[0].id, username, hashPassword, 'admin'],
     };
 
     await pool.query(qUser);
-
     // await pool.query(qUser);
     return res.status(201).json({
       status: 'success',
