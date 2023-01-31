@@ -28,6 +28,6 @@ app.get('/', (req, res) => {
 app.use(dataRoutes);
 app.use(kontraktorRoutes);
 app.use(adminRoutes);
-app.use(dropdownRoutes)
+app.use(dropdownRoutes);
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));

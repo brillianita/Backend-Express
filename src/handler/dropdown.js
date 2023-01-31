@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const dropdownProyek = async (req, res) => {
-  try{
+  try {
     const queryGet = {
       text: 'SELECT id_datum, nm_proyek FROM data',
     };
@@ -11,18 +11,16 @@ const dropdownProyek = async (req, res) => {
 
     return res.status(200).send({
       status: 'success',
-      data : {
-        dropdown : data,
+      data: {
+        dropdown: data,
       },
     });
-
   } catch (e) {
     console.error(e);
     return res.status(500).send({
       status: 'error',
       message: 'Gagal mengambil data',
     });
-
   }
 };
 

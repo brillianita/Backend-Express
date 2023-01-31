@@ -60,59 +60,57 @@ const getStatistikbyDataStatus = async (req, res) => {
 };
 
 const getStatistikPlanVsActual = async (req, res) => {
-  try{
-    const { id_datum } = req.params;
+  try {
+    const { id_datum: idDatum } = req.params;
 
-  if (!id_datum || Number.isNaN(Number(id_datum))) {
-    throw new InvariantError('Gagal mengambil data. Masukkan id datum yang benar');
-  }
-
-  const queryGet= {
-    text: 'SELECT p.arr_value as strplan, r.arr_value as strreal FROM plan as p INNER JOIN real as r ON r.datum_id=p.datum_id where p.datum_id=$1;',
-    values: [id_datum],
-  };
-  const poolRes = await pool.query(queryGet);
-
-  if(!(poolRes.rows[0])) {
-    throw new NotFoundError(`Data dengan id: ${id_datum} tidak ditemukan`);
-  }
-
-  const {
-    strplan: stringPlan, strreal: stringReal
-  } = poolRes.rows[0];
-
-  const arrPlan = JSON.parse(stringPlan);
-  const arrReal = JSON.parse(stringReal);
-  const totalWeek = Math.max((arrPlan).length, (arrReal).length)
-
-  const arrOfchart = [];
-
-  for (i = 0; i < totalWeek; i++){
-    const chartObj = {};
-    
-    chartObj.week = i+1;
-    chartObj.plan = arrPlan[i];
-    chartObj.real = arrReal[i];
-
-    if (!chartObj.real){
-      chartObj.real = null;
-    }
-    if(!chartObj.plan){
-      chartObj.plan = null;
+    if (!idDatum || Number.isNaN(Number(idDatum))) {
+      throw new InvariantError('Gagal mengambil data. Masukkan id datum yang benar');
     }
 
-    arrOfchart.push(chartObj);
-  }
+    const queryGet = {
+      text: 'SELECT p.arr_value as strplan, r.arr_value as strreal FROM plan as p INNER JOIN real as r ON r.datum_id=p.datum_id where p.datum_id=$1;',
+      values: [idDatum],
+    };
+    const poolRes = await pool.query(queryGet);
 
-  return res.status(200).send({
-    status: 'success',
-    data: {
-      id_datum,
-      totalWeek,
-      arrOfchart,
-    },
-  });
+    if (!(poolRes.rows[0])) {
+      throw new NotFoundError(`Data dengan id: ${idDatum} tidak ditemukan`);
+    }
 
+    const {
+      strplan: stringPlan, strreal: stringReal,
+    } = poolRes.rows[0];
+
+    const arrPlan = JSON.parse(stringPlan);
+    const arrReal = JSON.parse(stringReal);
+    const totalWeek = Math.max((arrPlan).length, (arrReal).length);
+
+    const arrOfchart = [];
+
+    for (let i = 0; i < totalWeek; i += 1) {
+      const chartObj = {};
+      chartObj.week = i + 1;
+      chartObj.plan = arrPlan[i];
+      chartObj.real = arrReal[i];
+
+      if (!chartObj.real) {
+        chartObj.real = null;
+      }
+      if (!chartObj.plan) {
+        chartObj.plan = null;
+      }
+
+      arrOfchart.push(chartObj);
+    }
+
+    return res.status(200).send({
+      status: 'success',
+      data: {
+        idDatum,
+        totalWeek,
+        arrOfchart,
+      },
+    });
   } catch (e) {
     console.error(e);
 
@@ -127,7 +125,6 @@ const getStatistikPlanVsActual = async (req, res) => {
       status: 'error',
       message: 'Gagal mengambil data',
     });
-
   }
 };
 
