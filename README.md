@@ -31,7 +31,65 @@
 ## API
 
 ### Authentication User
-SOON
+- Login
+    - method: `POST`
+    - endpoint :`/login`
+    - body request:
+    ```json
+    {
+        "username": string | required, 
+        "password": string | required
+    }
+    ```
+    - body response:
+    ```json
+    {
+      "status": "success",
+      "message": "Login Success",
+      "userData": {
+          "id": 2,
+          "username": "brillianita",
+          "role": "kontraktor"
+      },
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoyLCJpYXQiOjE2NzUyNTE3ODAsImV4cCI6MTY3NTI1MTkwMH0.mYRrKKq708XRu-O0lxGive0efAoyanut9Dn2mXkdi0Q",
+      "refreshToken": "3f3018ab-df98-4828-b83e-562a8f794e3a"
+    }
+    ```
+ 
+- Update Access Token
+  - method: `PUT`,
+  - endpoint: `/refreshToken`
+  - body request:
+    ```json
+    {
+        "refreshToken": token|required
+    }
+    ```
+  - body response:
+  ```json
+  {
+      "status": "success",
+      "message": "Token updated!",
+      "token": "eyJhbGciOiJIUzI1NiIs...",
+      "refreshToken": "dd1921e..."
+  }
+  ```
+ 
+ - Logout
+    - method: `DELETE`
+    - endpoint :`/logout`
+    - body request:
+    ```json
+    {
+        "refreshToken": token | required
+    }
+    ```
+    - body response:
+    ```json
+    {
+        "message": "Authentications has been removed"
+    }
+    ```
 
 ### Accessing Kontraktor
 - Get Recap
@@ -49,8 +107,7 @@ SOON
             "jenis_pekerjaan": "electrical",
             "nama_pekerjaan": "tetsts",
             "nomor_kontrak": "9845985",
-            "tgl_mulai": null,
-            "tgl_selesai": null,
+            "kont_pelaksana": "hhjdd",
             "lokasi_pekerjaan": "makassar"
         },...
         ]
@@ -71,8 +128,7 @@ SOON
                 "jenis_pekerjaan": "electrical",
                 "nama_pekerjaan": "tetsts",
                 "nomor_kontrak": "9845985",
-                "tgl_mulai": null,
-                "tgl_selesai": null,
+                "kont_pelaksana": "hhjdd",
                 "lokasi_pekerjaan": "makassar"
               },...
           ],
@@ -104,8 +160,7 @@ SOON
             "jenis_pekerjaan": "electrical",
             "nama_pekerjaan": "tetsts",
             "nomor_kontrak": "9845985",
-            "tgl_mulai": null,
-            "tgl_selesai": null,
+            "kont_pelaksana": "hhjdd",
             "lokasi_pekerjaan": "makassar"
           }
       ]
@@ -124,8 +179,7 @@ SOON
         "namaPekerjaan": string | required,
         "nomorKontrak": string | required,
         "lokasiPekerjaan": string | required,
-        "tglMulai": timestamp,
-        "tglSelesai": timestamp,
+        "kontPelaksana": string | required, 
         "username": string | required,
         "password": string | required,
         "confirmPassword": string | required
