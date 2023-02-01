@@ -91,10 +91,10 @@ const getStatistikPlanVsActual = async (req, res) => {
       const chartObj = {};
       chartObj.week = i + 1;
       chartObj.plan = arrPlan[i];
-      chartObj.real = arrReal[i];
+      chartObj.actual = arrReal[i];
 
-      if (!chartObj.real) {
-        chartObj.real = null;
+      if (!chartObj.actual) {
+        chartObj.actual = null;
       }
       if (!chartObj.plan) {
         chartObj.plan = null;
@@ -128,8 +128,37 @@ const getStatistikPlanVsActual = async (req, res) => {
   }
 };
 
+const getStatistikMonPr = async (req, res) => {
+  try {
+    // const queryGet = {
+    //   text: 'SELECT coll_status as statuspr, COUNT(id_monitor) as jumlahpr
+    // FROM monitoring_pr GROUP BY coll_status;'
+    // };
+    // const poolRes = await pool.query(queryGet);
+
+    const queryGet = {
+      text: "SELECT COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'tender') as tender, COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'po') as PO, COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'evalkom') as evalkom, COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'evaltek') as evaltek, COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'approval pr') as approval_pr, COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'submit eproc') as submit_eproc, COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'eval ece') as eval_ece, COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'ece/boq not ok') as eceboq, COUNT(id_monitor) FILTER (WHERE LOWER(coll_status) = 'not_set') as not_set FROM monitoring_pr;",
+    };
+    const poolRes = await pool.query(queryGet);
+
+    return res.status(200).send({
+      status: 'success',
+      data: {
+        chart: poolRes.rows[0],
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal mengambil data',
+    });
+  }
+};
+
 module.exports = {
   getData,
   getStatistikbyDataStatus,
   getStatistikPlanVsActual,
+  getStatistikMonPr,
 };
