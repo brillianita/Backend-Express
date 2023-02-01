@@ -9,7 +9,7 @@ const getAllKontraktor = async (req, res) => {
     if (!search) {
       qFilter = 'SELECT * FROM kontraktor ORDER BY LOWER(nomor_kontrak) ASC';
     } else {
-      qFilter = `SELECT * FROM kontraktor WHERE LOWER(jenis_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nama_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nomor_kontrak) LIKE LOWER('%${search}%') OR LOWER(lokasi_pekerjaan) LIKE LOWER('%${search}%') ORDER BY LOWER(nomor_kontrak) ASC`;
+      qFilter = `SELECT * FROM kontraktor WHERE LOWER(jenis_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nama_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nomor_kontrak) LIKE LOWER('%${search}%') OR LOWER(kont_pelaksana) LIKE LOWER('%${search}%') OR LOWER(lokasi_pekerjaan) LIKE LOWER('%${search}%') ORDER BY LOWER(nomor_kontrak) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -84,8 +84,7 @@ const createKontraktor = async (req, res) => {
     jenisPekerjaan,
     namaPekerjaan,
     nomorKontrak,
-    tglMulai,
-    tglSelesai,
+    kontPelaksana,
     lokasiPekerjaan,
     username,
     password,
@@ -102,13 +101,12 @@ const createKontraktor = async (req, res) => {
 
   try {
     const qKontraktor = {
-      text: 'INSERT INTO kontraktor (id, jenis_pekerjaan, nama_pekerjaan, nomor_kontrak, tgl_mulai, tgl_selesai, lokasi_pekerjaan) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6) RETURNING *;',
+      text: 'INSERT INTO kontraktor (id, jenis_pekerjaan, nama_pekerjaan, nomor_kontrak, kont_pelaksana, lokasi_pekerjaan) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING *;',
       values: [
         jenisPekerjaan,
         namaPekerjaan,
         nomorKontrak,
-        tglMulai,
-        tglSelesai,
+        kontPelaksana,
         lokasiPekerjaan,
       ],
     };
