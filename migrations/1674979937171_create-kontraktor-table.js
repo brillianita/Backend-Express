@@ -5,6 +5,10 @@ exports.up = ((pgm) => {
       notNull: true,
       primaryKey: true,
     },
+    kont_pelaksana: {
+      type: 'TEXT',
+      notNull: true,
+    },
     jenis_pekerjaan: {
       type: 'VARCHAR',
       notNull: true,
@@ -16,14 +20,6 @@ exports.up = ((pgm) => {
     nomor_kontrak: {
       type: 'VARCHAR',
       notNull: true,
-    },
-    tgl_mulai: {
-      type: 'TIMESTAMP',
-    //   notNull: true,
-    },
-    tgl_selesai: {
-      type: 'TIMESTAMP',
-    //   notNull: true,
     },
     lokasi_pekerjaan: {
       type: 'VARCHAR',
