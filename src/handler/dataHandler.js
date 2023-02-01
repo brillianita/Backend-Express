@@ -34,9 +34,17 @@ const getStatistikbyDataStatus = async (req, res) => {
       totalproject, completed, preparing, inpro,
     } = data;
 
-    data.persenComp = ((completed / totalproject) * 100).toFixed(1);
-    data.persenInpro = ((inpro / totalproject) * 100).toFixed(1);
-    data.persenprep = ((preparing / totalproject) * 100).toFixed(1);
+    // data.persenComp = ((completed / totalproject) * 100).toFixed(1);
+    // data.persenInpro = ((inpro / totalproject) * 100).toFixed(1);
+    // data.persenprep = ((preparing / totalproject) * 100).toFixed(1);
+
+    const persenComp = ((completed / totalproject) * 100).toFixed(1);
+    const persenInpro = ((inpro / totalproject) * 100).toFixed(1);
+    const persenprep = ((preparing / totalproject) * 100).toFixed(1);
+
+    data.persenComp =[persenComp, (100-persenComp).toFixed(1)];
+    data.persenInpro = [persenInpro, (100-persenInpro).toFixed(1)];
+    data.persenprep = [persenprep, (100-persenprep).toFixed(1)];
 
     return res.status(200).send({
       status: 'success',
