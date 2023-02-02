@@ -7,9 +7,9 @@ const getAllAdmin = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT * FROM admin ORDER BY LOWER (sap) ASC';
+      qFilter = 'SELECT a.id, a.nama, a.sap, a.seksi, u.username FROM admin AS a INNER JOIN users AS u ON a.id = u.admin_id ORDER BY LOWER (sap) ASC';
     } else {
-      qFilter = `SELECT * FROM admin WHERE LOWER(nama) LIKE LOWER('%${search}%') OR LOWER(sap) LIKE LOWER('%${search}%') OR LOWER(seksi) LIKE LOWER('%${search}%') ORDER BY LOWER(sap) ASC`;
+      qFilter = `SELECT a.id, a.nama, a.sap, a.seksi, u.username FROM admin AS a INNER JOIN users AS u ON a.id = u.admin_id WHERE LOWER(a.nama) LIKE LOWER('%${search}%') OR LOWER(a.sap) LIKE LOWER('%${search}%') OR LOWER(a.seksi) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') ORDER BY LOWER(sap) ASC`;
     }
 
     let result = await pool.query(qFilter);
