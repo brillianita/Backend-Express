@@ -42,9 +42,9 @@ const getStatistikbyDataStatus = async (req, res) => {
     const persenInpro = ((inpro / totalproject) * 100).toFixed(1);
     const persenprep = ((preparing / totalproject) * 100).toFixed(1);
 
-    data.persenComp =[persenComp, (100-persenComp).toFixed(1)];
-    data.persenInpro = [persenInpro, (100-persenInpro).toFixed(1)];
-    data.persenprep = [persenprep, (100-persenprep).toFixed(1)];
+    data.persenComp = [persenComp, (100 - persenComp).toFixed(1)];
+    data.persenInpro = [persenInpro, (100 - persenInpro).toFixed(1)];
+    data.persenprep = [persenprep, (100 - persenprep).toFixed(1)];
 
     return res.status(200).send({
       status: 'success',
@@ -164,9 +164,32 @@ const getStatistikMonPr = async (req, res) => {
   }
 };
 
+const getStatistikPrKonstruksi = async (req, res) => {
+  try {
+    const queryGet = {
+      text: "SELECT COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'user') as user, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'rb/capex') as rbCapex, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'pengadaan') as pengadaan, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'konstruksi') as konstruksi, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'not_set') as not_set FROM monitoring_pr;",
+    };
+    const poolRes = await pool.query(queryGet);
+
+    return res.status(200).send({
+      status: 'success',
+      data: {
+        chart: poolRes.rows[0],
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal mengambil data',
+    });
+  }
+};
+
 module.exports = {
   getData,
   getStatistikbyDataStatus,
   getStatistikPlanVsActual,
   getStatistikMonPr,
+  getStatistikPrKonstruksi,
 };

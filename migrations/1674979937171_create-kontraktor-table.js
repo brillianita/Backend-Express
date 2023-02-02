@@ -6,7 +6,7 @@ exports.up = ((pgm) => {
       primaryKey: true,
     },
     kont_pelaksana: {
-      type: 'TEXT',
+      type: 'VARCHAR',
       notNull: true,
     },
     jenis_pekerjaan: {
