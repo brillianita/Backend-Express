@@ -105,7 +105,7 @@ const refreshToken = async (req, res) => {
       values: [result.rows[0].id],
     };
     await pool.query(queryUser);
-    const newAccessToken = jwt.sign({ user: result.rows[0].user_id }, process.env.SECRET, {
+    const newAccessToken = jwt.sign({ user: result.rows[0].id_user }, process.env.SECRET, {
       expiresIn: 120,
     });
 

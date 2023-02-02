@@ -1,32 +1,33 @@
 exports.up = ((pgm) => {
-  pgm.createTable('kontraktor', {
+  pgm.createTable('staff', {
     id: {
       type: 'SERIAL',
       notNull: true,
       primaryKey: true,
     },
-    kont_pelaksana: {
+    nama: {
       type: 'VARCHAR',
       notNull: true,
     },
-    jenis_pekerjaan: {
+    sap: {
       type: 'VARCHAR',
       notNull: true,
     },
-    nama_pekerjaan: {
+    seksi: {
       type: 'VARCHAR',
       notNull: true,
     },
-    nomor_kontrak: {
-      type: 'VARCHAR',
-      notNull: true,
-    },
-    lokasi_pekerjaan: {
-      type: 'VARCHAR',
+    id_user: {
+      type: 'INTEGER',
       notNull: true,
     },
   });
+  pgm.addConstraint(
+    'staff',
+    'fk_staff.id_user_users.id',
+    'FOREIGN KEY(id_user) REFERENCES users(id) ON DELETE CASCADE',
+  );
 });
 exports.down = (pgm) => {
-  pgm.dropTable('kontraktor');
+  pgm.dropTable('staff');
 };

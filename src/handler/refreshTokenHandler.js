@@ -14,7 +14,7 @@ const createToken = async (user) => {
 
   // Insert the token field in refresh_token table
   const query = {
-    text: 'INSERT INTO refresh_token (id, token, tanggal_expired, user_id) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
+    text: 'INSERT INTO refresh_token (id, token, tanggal_expired, id_user) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
     values: [tokenRefresh, expiredAt, user.id],
   };
   const result = await pool.query(query);

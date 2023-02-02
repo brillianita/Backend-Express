@@ -7,14 +7,14 @@ const getAllKontraktor = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT k.id, k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id = u.kontraktor_id ORDER BY LOWER(k.nomor_kontrak) ASC';
+      qFilter = 'SELECT k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, k.id_user, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id_user = u.id ORDER BY LOWER(k.nomor_kontrak) ASC';
     } else {
-      qFilter = `SELECT k.id, k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id = u.kontraktor_id WHERE LOWER(jenis_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nama_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nomor_kontrak) LIKE LOWER('%${search}%') OR LOWER(kont_pelaksana) LIKE LOWER('%${search}%') OR LOWER(lokasi_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') ORDER BY LOWER(nomor_kontrak) ASC`;
+      qFilter = `SELECT k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, k.id_user, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id_user = u.id WHERE LOWER(jenis_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nama_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nomor_kontrak) LIKE LOWER('%${search}%') OR LOWER(kont_pelaksana) LIKE LOWER('%${search}%') OR LOWER(lokasi_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') ORDER BY LOWER(nomor_kontrak) ASC`;
     }
     let result = await pool.query(qFilter);
 
     if (pageSize && currentPage) {
-      const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
+      const totalRows = await pool.query(`SELECT COUNT (id_user) FROM (${qFilter})sub`);
       const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
       const offset = (currentPage - 1) * pageSize;
       result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(nomor_kontrak) ASC LIMIT ${pageSize} OFFSET ${offset};`);
@@ -48,7 +48,7 @@ const getKontraktorById = async (req, res) => {
   try {
     const { id } = req.params;
     const query = {
-      text: 'SELECT * FROM kontraktor INNER JOIN users ON users.username WHERE id=$1',
+      text: 'SELECT k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, k.id_user, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id_user = u.id WHERE id_user=$1',
       values: [id],
     };
     const result = await pool.query(query);
@@ -100,24 +100,23 @@ const createKontraktor = async (req, res) => {
   }
 
   try {
+    const qUser = {
+      text: 'INSERT INTO users (id, username, password, role) VALUES (DEFAULT, $1, $2, $3) RETURNING *;',
+      values: [username, hashPassword, 'kontraktor'],
+    };
+    const resUser = await pool.query(qUser);
     const qKontraktor = {
-      text: 'INSERT INTO kontraktor (id, jenis_pekerjaan, nama_pekerjaan, nomor_kontrak, kont_pelaksana, lokasi_pekerjaan) VALUES (DEFAULT, $1, $2, $3, $4, $5) RETURNING *;',
+      text: 'INSERT INTO kontraktor (id, jenis_pekerjaan, nama_pekerjaan, nomor_kontrak, kont_pelaksana, lokasi_pekerjaan, id_user) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6)',
       values: [
         jenisPekerjaan,
         namaPekerjaan,
         nomorKontrak,
         kontPelaksana,
         lokasiPekerjaan,
+        resUser.rows[0].id,
       ],
     };
-    const resKontraktor = await pool.query(qKontraktor);
-
-    const qUser = {
-      text: 'INSERT INTO users (id, kontraktor_id, username, password, role) VALUES (DEFAULT, $1, $2, $3, $4);',
-      values: [resKontraktor.rows[0].id, username, hashPassword, 'kontraktor'],
-    };
-
-    await pool.query(qUser);
+    await pool.query(qKontraktor);
 
     // await pool.query(qUser);
     return res.status(201).json({
@@ -133,23 +132,12 @@ const createKontraktor = async (req, res) => {
 };
 
 // const deleteKontraktor = async (req, res) => {
-//   try {
-//     const { id } = req.params;
+//   const id = req.params;
 
-//     const queryDelete = {
-//       text: 'DELETE FROM refresh_token WHERE token=$1;',
-//       values: [id],
-//     };
-//     await pool.query(queryDelete);
-//     return res.status(201).json({ message: 'Authentications has been removed' });
-//   } catch (e) {
-//     return res.status(403).json(e.message);
-//   }
 // };
 
 module.exports = {
   createKontraktor,
   getAllKontraktor,
   getKontraktorById,
-  // deleteKontraktor,
 };
