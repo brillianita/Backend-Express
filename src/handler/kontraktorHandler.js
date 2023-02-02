@@ -7,9 +7,9 @@ const getAllKontraktor = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT * FROM kontraktor ORDER BY LOWER(nomor_kontrak) ASC';
+      qFilter = 'SELECT k.id, k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id = u.kontraktor_id ORDER BY LOWER(k.nomor_kontrak) ASC';
     } else {
-      qFilter = `SELECT * FROM kontraktor WHERE LOWER(jenis_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nama_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nomor_kontrak) LIKE LOWER('%${search}%') OR LOWER(kont_pelaksana) LIKE LOWER('%${search}%') OR LOWER(lokasi_pekerjaan) LIKE LOWER('%${search}%') ORDER BY LOWER(nomor_kontrak) ASC`;
+      qFilter = `SELECT k.id, k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id = u.kontraktor_id WHERE LOWER(jenis_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nama_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nomor_kontrak) LIKE LOWER('%${search}%') OR LOWER(kont_pelaksana) LIKE LOWER('%${search}%') OR LOWER(lokasi_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') ORDER BY LOWER(nomor_kontrak) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -48,7 +48,7 @@ const getKontraktorById = async (req, res) => {
   try {
     const { id } = req.params;
     const query = {
-      text: 'SELECT * FROM kontraktor WHERE id=$1',
+      text: 'SELECT * FROM kontraktor INNER JOIN users ON users.username WHERE id=$1',
       values: [id],
     };
     const result = await pool.query(query);
@@ -132,8 +132,24 @@ const createKontraktor = async (req, res) => {
   }
 };
 
+// const deleteKontraktor = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     const queryDelete = {
+//       text: 'DELETE FROM refresh_token WHERE token=$1;',
+//       values: [id],
+//     };
+//     await pool.query(queryDelete);
+//     return res.status(201).json({ message: 'Authentications has been removed' });
+//   } catch (e) {
+//     return res.status(403).json(e.message);
+//   }
+// };
+
 module.exports = {
   createKontraktor,
   getAllKontraktor,
   getKontraktorById,
+  // deleteKontraktor,
 };
