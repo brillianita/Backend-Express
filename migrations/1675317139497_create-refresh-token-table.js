@@ -13,15 +13,15 @@ exports.up = ((pgm) => {
       type: 'TIMESTAMP',
       notNull: false,
     },
-    user_id: {
+    id_user: {
       type: 'INTEGER',
       notNull: true,
     },
   });
   pgm.addConstraint(
     'refresh_token',
-    'fk_refresh_token.user_id_users.id',
-    'FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE',
+    'fk_refresh_token.id_user_users.id',
+    'FOREIGN KEY(id_user) REFERENCES users(id) ON DELETE CASCADE',
   );
 });
 

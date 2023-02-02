@@ -41,11 +41,11 @@ const isAdmin = async (req, res, next) => {
       values: [req.user.user],
     };
     const result = await pool.query(query);
-    if (result.rows[0].role === 'admin') {
+    if (result.rows[0].role === 'admin' || result.rows[0].role === 'staff') {
       next();
       return;
     }
-    res.status(403).json({ msg: 'Require Admin Role!' });
+    res.status(403).json({ msg: 'Require admin or staff role!' });
     return;
   } catch (error) {
     res.status(400).json({ msg: error.message });
@@ -60,7 +60,7 @@ const isAdminOrStafOrKontraktor = async (req, res, next) => {
     };
 
     const result = await pool.query(query);
-    if (result.rows[0].role === 'kontraktor' || result.rows[0].role === 'admin' || result.rows[0].role === 'staf') {
+    if (result.rows[0].role === 'kontraktor' || result.rows[0].role === 'admin' || result.rows[0].role === 'staff') {
       next();
       return;
     }
