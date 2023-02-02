@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const dataRoutes = require('./routes/dataRoutes');
 const kontraktorRoutes = require('./routes/kontraktorRoutes');
-const adminRoutes = require('./routes/adminRoutes');
+const staffRoutes = require('./routes/staffRoutes');
 const authRoutes = require('./routes/authRoutes');
 const dropdownRoutes = require('./routes/dropdownRoutes');
 
@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 
 app.use(dataRoutes);
 app.use(kontraktorRoutes);
-app.use(adminRoutes);
+app.use(staffRoutes);
 app.use(authRoutes);
 app.use(dropdownRoutes);
 

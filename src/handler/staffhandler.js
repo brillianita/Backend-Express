@@ -1,21 +1,21 @@
 const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
 
-const getAllAdmin = async (req, res) => {
+const getAllStaff = async (req, res) => {
   const { pageSize, currentPage, search } = req.query;
 
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT a.id, a.nama, a.sap, a.seksi, u.username FROM admin AS a INNER JOIN users AS u ON a.id = u.admin_id ORDER BY LOWER (sap) ASC';
+      qFilter = 'SELECT s.id_user, s.nama, s.sap, s.seksi, u.username FROM staff AS s INNER JOIN users AS u ON s.id_user = u.id ORDER BY LOWER (sap) ASC';
     } else {
-      qFilter = `SELECT a.id, a.nama, a.sap, a.seksi, u.username FROM admin AS a INNER JOIN users AS u ON a.id = u.admin_id WHERE LOWER(a.nama) LIKE LOWER('%${search}%') OR LOWER(a.sap) LIKE LOWER('%${search}%') OR LOWER(a.seksi) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') ORDER BY LOWER(sap) ASC`;
+      qFilter = `SELECT s.id_user, s.nama, s.sap, s.seksi, u.username FROM staff AS s INNER JOIN users AS u ON s.id_user = u.id WHERE LOWER(s.nama) LIKE LOWER('%${search}%') OR LOWER(s.sap) LIKE LOWER('%${search}%') OR LOWER(s.seksi) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') ORDER BY LOWER(s.sap) ASC`;
     }
 
     let result = await pool.query(qFilter);
 
     if (pageSize && currentPage) {
-      const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
+      const totalRows = await pool.query(`SELECT COUNT (id_user) FROM (${qFilter})sub`);
       const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
       const offset = (currentPage - 1) * pageSize;
       result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(sap) ASC LIMIT ${pageSize} OFFSET ${offset};`);
@@ -45,11 +45,11 @@ const getAllAdmin = async (req, res) => {
   }
 };
 
-const getAdminById = async (req, res) => {
+const getStaffById = async (req, res) => {
   try {
     const { id } = req.params;
     const query = {
-      text: 'SELECT * FROM admin WHERE id=$1',
+      text: 'SELECT s.id_user, s.nama, s.sap, s.seksi, u.username FROM staff AS s INNER JOIN users AS u ON s.id_user = u.id WHERE id_user=$1',
       values: [id],
     };
     const result = await pool.query(query);
@@ -84,7 +84,7 @@ const getAdminById = async (req, res) => {
 };
 
 // Create user
-const createAdmin = async (req, res) => {
+const createStaff = async (req, res) => {
   const {
     nama,
     sap,
@@ -102,17 +102,17 @@ const createAdmin = async (req, res) => {
         message: 'Password and Confirm Password does not match',
       });
     }
-    const qAdmin = {
-      text: 'INSERT INTO admin (id, nama, sap, seksi) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
-      values: [nama, sap, seksi],
-    };
-    const resAdmin = await pool.query(qAdmin);
     const qUser = {
-      text: 'INSERT INTO users (id, admin_id, username, password, role) VALUES (DEFAULT, $1, $2, $3, $4);',
-      values: [resAdmin.rows[0].id, username, hashPassword, 'admin'],
+      text: 'INSERT INTO users (id, username, password, role) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
+      values: [username, hashPassword, 'staff'],
     };
 
-    await pool.query(qUser);
+    const resUser = await pool.query(qUser);
+    const qStaf = {
+      text: 'INSERT INTO staff (id, nama, sap, seksi, id_user) VALUES (DEFAULT, $1, $2, $3, $4)',
+      values: [nama, sap, seksi, resUser.rows[0].id],
+    };
+    await pool.query(qStaf);
     // await pool.query(qUser);
     return res.status(201).json({
       status: 'success',
@@ -127,7 +127,7 @@ const createAdmin = async (req, res) => {
 };
 
 module.exports = {
-  createAdmin,
-  getAllAdmin,
-  getAdminById,
+  createStaff,
+  getAllStaff,
+  getStaffById,
 };

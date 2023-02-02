@@ -1,24 +1,25 @@
 exports.up = ((pgm) => {
-  pgm.createTable('admin', {
+  pgm.createTable('users', {
     id: {
       type: 'SERIAL',
       notNull: true,
       primaryKey: true,
     },
-    nama: {
+    username: {
       type: 'VARCHAR',
       notNull: true,
     },
-    sap: {
+    password: {
       type: 'VARCHAR',
       notNull: true,
     },
-    seksi: {
+    role: {
       type: 'VARCHAR',
       notNull: true,
     },
   });
 });
+
 exports.down = (pgm) => {
-  pgm.dropTable('admin');
+  pgm.dropTable('users');
 };
