@@ -131,13 +131,31 @@ const createKontraktor = async (req, res) => {
   }
 };
 
-// const deleteKontraktor = async (req, res) => {
-//   const id = req.params;
-
-// };
+const deleteKontraktor = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const queryKontraktor = {
+      text: 'SELECT * FROM kontraktor WHERE id_user = $1',
+      values: [id],
+    };
+    const resKontraktor = await pool.query(queryKontraktor);
+    if (!resKontraktor.rows[0]) {
+      return res.status(201).json({ message: 'User not found' });
+    }
+    const queryDelete = {
+      text: 'DELETE FROM users WHERE id=$1',
+      values: [id],
+    };
+    await pool.query(queryDelete);
+    return res.status(201).json({ message: 'User has been removed' });
+  } catch (e) {
+    return res.status(403).json(e.message);
+  }
+};
 
 module.exports = {
   createKontraktor,
   getAllKontraktor,
   getKontraktorById,
+  deleteKontraktor,
 };
