@@ -186,10 +186,54 @@ const getStatistikPrKonstruksi = async (req, res) => {
   }
 };
 
+const getStatistikPko = async (req, res) => {
+  try {
+    const { tahun } = req.query;
+
+    if (!tahun || Number.isNaN(Number(tahun))) {
+      throw new InvariantError('Gagal mengambil data. Mohon isi tahun project dengan benar');
+    }
+
+    const queryGetQty = {
+      text: "SELECT COUNT(id_pko) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_pko) FILTER (WHERE LOWER(status) = 'in progress') as inPro, COUNT(id_pko) FILTER (WHERE LOWER(status) = 'pending') as pending FROM pko WHERE tahun = $1;",
+      values: [tahun],
+    };
+    const queryGetValRp = {
+      text: "SELECT SUM(nilai_project) FILTER (WHERE LOWER(status) = 'completed') as realisasi, SUM(nilai_project) FILTER(WHERE LOWER(status_penagihan) = 'bapp') as bapp FROM pko;",
+    };
+    const poolResQty = await pool.query(queryGetQty);
+    const poolResRp = await pool.query(queryGetValRp);
+
+    poolResRp.rows[0].outstand = (poolResRp.rows[0].realisasi - poolResRp.rows[0].bapp).toString();
+
+    return res.status(200).send({
+      status: 'success',
+      data: {
+        qty: poolResQty.rows[0],
+        rp: poolResRp.rows[0],
+      },
+    });
+  } catch (e) {
+    console.error(e);
+
+    if (e instanceof ClientError) {
+      return res.status(400).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal mengambil data',
+    });
+  }
+};
+
 module.exports = {
   getData,
   getStatistikbyDataStatus,
   getStatistikPlanVsActual,
   getStatistikMonPr,
   getStatistikPrKonstruksi,
+  getStatistikPko,
 };
