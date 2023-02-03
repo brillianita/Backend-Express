@@ -3,6 +3,6 @@ const dropdownHandler = require('../handler/dropdown');
 
 const router = Router();
 
-router.get('/dropdownProyek', dropdownHandler.dropdownProyek);
+router.get('/dropdownproyek', dropdownHandler.dropdownProyek);
 
 module.exports = router;
