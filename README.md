@@ -87,7 +87,8 @@
     - body response:
     ```json
     {
-        "message": "Authentications has been removed"
+      "status": "success",
+      "message": "Authentications has been removed"
     }
     ```
 
@@ -167,7 +168,7 @@
   }
   ```
 - Insert New Kontraktor
-  - - method: `POST`
+  - method: `POST`
   - endpoint: `/kontraktor/tambah`,
   - Authorization:
     - type: `Bearer Token`,
@@ -188,12 +189,147 @@
   - body response: 
   ```json
   {
-    "Register successfull!"
+    "status": "success",
+    "message": "Register Successfull!"
+  }
+  ````  
+- Update Kontraktor Paswword
+  - method: `PUT`
+  - endpoint: `/kontraktor/:id`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body request:
+  ```json
+    { 
+      "oldPass": string | required,
+      "newPass": string | required,
+      "confirmNewPass": string | required
+    }
+  ```
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "password has updated"
   }
   ````  
 
+### Accessing Staff
+- Get Recap
+    - method: `GET`
+    - endpoint: `/staff`
+    - authorization: 
+      - type: `Bearer Token`,
+      - token: `accessToken`
+    - body response:
+    ```json
+    {
+        "status": "success",
+        "data": [{
+            "id": 2,
+            "nama": "ditaa",
+            "sap": "873538959",
+            "seksi": "pengadaan"
+        },...
+        ]
+    }
+    ```
+  ---- **_Pagination_** ----     
+     - endpoint: `/staff?pageSize=10&currentPage=1`  
+      will show 10 first staff.  
+      `pageSize` stand for how many staff that can be shown in one page.  
+      `currentPage` stand for staff current page. 
+     - body response:
+     ```json
+      {
+          "status": "success",
+          "data": [
+              {
+                "id": 2,
+            "nama": "ditaa",
+            "sap": "873538959",
+            "seksi": "pengadaan"
+              },...
+          ],
+              "page": {
+              "pageSize": "2",
+              "total_rows": "19",
+              "total_pages": 10,
+              "currentPage": "1"
+          }
+      }
+    ```
+  ---- **_Search_** ----    
+  - endpoint: `/staff?search=brillianita`  
+  will filter the staff and only show the staff within `search` Brillianita 
 
-  ### Accessing Admin
+- Get Staff By Id staff
+  - method: `GET`
+  - endpoint: `/staff/:id`,
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response: 
+  ```json
+    {
+        "status": "success",
+        "data": [
+            {
+                "id": 2,
+                "nama": "ditaa",
+                "sap": "873538959",
+                "seksi": "pengadaan"
+            }
+        ]
+    }
+  ```
+- Insert New staff
+  - method: `POST`
+  - endpoint: `/staff/tambah`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body request:
+  ```json
+    {
+        "nama": string | required,
+        "sap": string | required,
+        "seksi": string | required,
+        "username": string | required,
+        "password": string | required,
+        "confirmPassword": string | required
+    }
+  ```
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "Register Successfull!"
+  }
+  ````  
+- Update Staff Paswword
+  - method: `PUT`
+  - endpoint: `/staff/:id`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body request:
+  ```json
+    { 
+      "oldPass": string | required,
+      "newPass": string | required,
+      "confirmNewPass": string | required
+    }
+  ```
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "password has updated"
+  }
+  ````
+### Accessing Admin
 - Get Recap
     - method: `GET`
     - endpoint: `/admin`
@@ -263,7 +399,7 @@
     }
   ```
 - Insert New admin
-  - - method: `POST`
+  - method: `POST`
   - endpoint: `/admin/tambah`,
   - Authorization:
     - type: `Bearer Token`,
@@ -282,6 +418,28 @@
   - body response: 
   ```json
   {
-    "Register successfull!"
+    "status": "success",
+    "message": "Register Successfull!"
   }
   ````  
+- Update Admin Paswword
+  - method: `PUT`
+  - endpoint: `/admin/:id`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body request:
+  ```json
+    { 
+      "oldPass": string | required,
+      "newPass": string | required,
+      "confirmNewPass": string | required
+    }
+  ```
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "password has updated"
+  }
+  ````          
