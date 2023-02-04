@@ -8,6 +8,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const laporanRoutes = require('./routes/laporanRoutes');
 const authRoutes = require('./routes/authRoutes');
 const dropdownRoutes = require('./routes/dropdownRoutes');
+const dataRoutes = require('./routes/dataRoutes');
 
 require('dotenv').config();
 
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
   res.status(200).json(teks);
 });
 
+// routes
 app.use(dashboardRoutes);
 app.use(kontraktorRoutes);
 app.use(staffRoutes);
@@ -35,5 +37,6 @@ app.use(adminRoutes);
 app.use(laporanRoutes);
 app.use(authRoutes);
 app.use(dropdownRoutes);
+app.use(dataRoutes);
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));
