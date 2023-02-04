@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const dataRoutes = require('./routes/dataRoutes');
 const kontraktorRoutes = require('./routes/kontraktorRoutes');
 const staffRoutes = require('./routes/staffRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const authRoutes = require('./routes/authRoutes');
 const dropdownRoutes = require('./routes/dropdownRoutes');
 
@@ -29,6 +30,7 @@ app.get('/', (req, res) => {
 app.use(dataRoutes);
 app.use(kontraktorRoutes);
 app.use(staffRoutes);
+app.use(adminRoutes);
 app.use(authRoutes);
 app.use(dropdownRoutes);
 

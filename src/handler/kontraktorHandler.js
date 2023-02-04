@@ -131,6 +131,60 @@ const createKontraktor = async (req, res) => {
   }
 };
 
+const updatePassword = async (req, res) => {
+  const { id } = req.params;
+  const {
+    oldPass,
+    newPass,
+    confirmNewPass,
+  } = req.body;
+
+  try {
+    const query = {
+      text: 'SELECT id, password, role FROM users WHERE id=$1',
+      values: [id],
+    };
+    const result = await pool.query(query);
+    if (result.rows[0].role !== 'kontraktor') {
+      return res.status(401).send({
+        status: 'fail',
+        message: 'invalid request',
+      });
+    }
+    const passwordIsValid = bcrypt.compareSync(
+      oldPass,
+      result.rows[0].password,
+    );
+    // If the password is not valid, send the error message
+    if (!passwordIsValid) {
+      return res.status(401).send({
+        status: 'fail',
+        message: 'Incorrect old password!',
+      });
+      // throw new AuthenticationError('Invalid Password!');
+    }
+    const hashPassword = bcrypt.hashSync(newPass, 8);
+    if (newPass !== confirmNewPass) {
+      return res.status(400).send({
+        status: 'fail',
+        message: 'Password and confirm password does not match',
+      });
+    }
+
+    const qUpdatePass = {
+      text: 'UPDATE users SET password = $1  WHERE id = $2;',
+      values: [hashPassword, id],
+    };
+    await pool.query(qUpdatePass);
+    return res.status(201).send({
+      status: 'success',
+      message: 'password has updated',
+    });
+  } catch (e) {
+    return res.status(403).json(e.message);
+  }
+};
+
 const deleteKontraktor = async (req, res) => {
   const { id } = req.params;
   try {
@@ -158,4 +212,5 @@ module.exports = {
   getAllKontraktor,
   getKontraktorById,
   deleteKontraktor,
+  updatePassword,
 };
