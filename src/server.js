@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const dataRoutes = require('./routes/dataRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const kontraktorRoutes = require('./routes/kontraktorRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
   res.status(200).json(teks);
 });
 
-app.use(dataRoutes);
+app.use(dashboardRoutes);
 app.use(kontraktorRoutes);
 app.use(staffRoutes);
 app.use(adminRoutes);
