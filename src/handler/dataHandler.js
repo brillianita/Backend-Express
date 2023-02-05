@@ -49,10 +49,13 @@ const addDatum = async (req, res) => {
 
 const getData = async (req, res) => {
   const queryGet = {
-    text: 'SELECT * FROM data',
+    text: 'SELECT * FROM data order by id_datum',
   };
   const data = await pool.query(queryGet);
 
+  for (let i = 0; i < (data.rows).length; i += 1) {
+    data.rows[i].nilai = (Number(data.rows[i].nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+  }
   return res.status(200).send({
     status: 'success',
     data: data.rows,
@@ -76,6 +79,8 @@ const getDatum = async (req, res) => {
     if (!(poolDatum.rows[0])) {
       throw new NotFoundError(`Data dengan id: ${idDatum} tidak ditemukan`);
     }
+
+    poolDatum.rows[0].nilai = (Number(poolDatum.rows[0].nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
 
     return res.status(200).send({
       status: 'success',
