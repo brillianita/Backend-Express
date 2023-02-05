@@ -133,7 +133,10 @@ const logOut = async (req, res) => {
       values: [refreshToken],
     };
     await pool.query(queryDelete);
-    return res.status(201).json({ message: 'Authentications has been removed' });
+    return res.status(201).json({
+      status: 'success',
+      message: 'Authentications has been removed',
+    });
   } catch (e) {
     return res.status(403).json(e.message);
   }
