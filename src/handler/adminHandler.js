@@ -133,7 +133,10 @@ const updatePassword = async (req, res) => {
       message: 'password has updated',
     });
   } catch (e) {
-    return res.status(403).json(e.message);
+    return res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
   }
 };
 
@@ -168,13 +171,13 @@ const createAdmin = async (req, res) => {
     };
     await pool.query(qStaf);
     // await pool.query(qUser);
-    return res.status(201).json({
+    return res.status(201).send({
       status: 'success',
       message: 'Register Successfull!',
     });
   } catch (e) {
-    return res.status(400).json({
-      status: 'fail',
+    return res.status(500).send({
+      status: 'error',
       message: e.message,
     });
   }

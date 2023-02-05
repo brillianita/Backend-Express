@@ -134,7 +134,7 @@
               },...
           ],
               "page": {
-              "pageSize": "2",
+              "page_size": "2",
               "total_rows": "19",
               "total_pages": 10,
               "currentPage": "1"
@@ -214,7 +214,19 @@
     "message": "password has updated"
   }
   ````  
-
+- Delete Kontraktor By Id
+  - method: `DELETE`
+  - endpoint: `/kontraktor/:id`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "User has been removed",
+  }
+  ````  
 ### Accessing Staff
 - Get Recap
     - method: `GET`
@@ -253,7 +265,7 @@
               },...
           ],
               "page": {
-              "pageSize": "2",
+              "page_size": "2",
               "total_rows": "19",
               "total_pages": 10,
               "currentPage": "1"
@@ -329,6 +341,19 @@
     "message": "password has updated"
   }
   ````
+- Delete Staff By Id
+  - method: `DELETE`
+  - endpoint: `/staff/:id`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "User has been removed",
+  }
+  ````    
 ### Accessing Admin
 - Get Recap
     - method: `GET`
@@ -367,7 +392,7 @@
               },...
           ],
               "page": {
-              "pageSize": "2",
+              "page_size": "2",
               "total_rows": "19",
               "total_pages": 10,
               "currentPage": "1"
@@ -441,5 +466,141 @@
   {
     "status": "success",
     "message": "password has updated"
+  }
+  ````
+
+### Accessing Laporan (For Kontraktor)
+- Get Recap
+  - method: `GET`
+  - endpoint: `/laporan/:nomorKontrak`
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": 2,
+        "jenis_laporan": "Laporan mingguan",
+        "urutan_lap": 1,
+        "created_at": "2023-02-04T16:00:00.000Z",
+        "nama_proyek": "ini",
+        "nama_vendor": "hdhdh",
+        "nomor_kontrak": "icebear",
+        "catatan": "Revisi",
+        "status": "Ditinjau"
+      },...
+    ]
+  }
+  ```
+  ---- **_Pagination_** ----     
+     - endpoint: `/laporan/:nomorKontrak?pageSize=10&currentPage=1`  
+      will show 10 first laporan.  
+      `pageSize` stand for how many laporan that can be shown in one page.  
+      `currentPage` stand for laporan current page. 
+     - body response:
+     ```json
+      {
+          "status": "success",
+          "data": [
+            {
+              "id": 2,
+              "jenis_laporan": "Laporan mingguan",
+              "urutan_lap": 1,
+              "created_at": "2023-02-04T16:00:00.000Z",
+              "nama_proyek": "ini",
+              "nama_vendor": "hdhdh",
+              "nomor_kontrak": "icebear",
+              "catatan": "Revisi",
+              "status": "Ditinjau"
+            },..
+          ],
+              "page": {
+              "page_size": "2",
+              "total_rows": "19",
+              "total_pages": 10,
+              "currentPage": "1"
+          }
+      }
+    ```
+  ---- **_Search_** ----    
+  - endpoint: `/laporan/:nomorKontrak?search=brillianita`  
+  will filter the laporan and only show the laporan within `search` Brillianita 
+
+- Get laporan By Id laporan
+  - method: `GET`
+  - endpoint: `/detailLaporan/:id`,
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response: 
+  ```json
+    {
+        "status": "success",
+        "data": [
+          {
+            "id": 2,
+            "jenis_laporan": "Laporan mingguan",
+            "urutan_lap": 1,
+            "created_at": "2023-02-04T16:00:00.000Z",
+            "nama_proyek": "ini",
+            "nama_vendor": "hdhdh",
+            "nomor_kontrak": "icebear",
+            "catatan": "Revisi",
+            "status": "Ditinjau"
+          },
+        ]
+    }
+  ```
+
+- Create Laporan
+  - method: `POST`
+  - endpoint: `/laporan/tambah`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body request:
+  ```json
+    { 
+      "file": FILE | required,
+      "jenisLaporan" : string | required,
+      "urutanLap" : integer | for laporan harian, bulanan, mingguan, 
+      "namaProyek": string | required,
+      "namaVendor": string |required,
+      "nomorKontrak": string | required,
+    }
+  ```
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "laporan has been created successfully"
+  }
+  ````
+
+- Update Laporan
+  - method: `PUT`
+  - endpoint: `/laporan/edit/:id`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body request:
+  ```json
+    { 
+      "file": FILE | required,
+      "jenisLaporan" : string | required,
+      "urutanLap" : integer | for laporan harian, bulanan, mingguan, 
+      "namaProyek": string | required,
+      "namaVendor": string |required,
+      "nomorKontrak": string | required,
+    }
+  ```
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "laporan has been updated successfully"
   }
   ````          

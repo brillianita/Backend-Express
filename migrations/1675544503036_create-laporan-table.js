@@ -9,9 +9,9 @@ exports.up = ((pgm) => {
       type: 'VARCHAR',
       notNull: true,
     },
-    ke: {
+    urutan_lap: {
       type: 'INTEGER',
-      notNull: true,
+      notNull: false,
     },
     nama_proyek: {
       type: 'VARCHAR',
