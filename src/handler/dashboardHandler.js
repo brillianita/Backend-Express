@@ -206,10 +206,10 @@ const getStatistikPko = async (req, res) => {
 
     const { realisasi, bapp } = poolResRp.rows[0];
     const resRp = {};
-    
-    resRp.outstand = (realisasi - bapp).toLocaleString("id-ID", {style:"currency", currency:"IDR"});
-    resRp.realisasi = (parseInt(realisasi)).toLocaleString("id-ID", {style:"currency", currency:"IDR"});
-    resRp.bapp = (parseInt(bapp)).toLocaleString("id-ID", {style:"currency", currency:"IDR"});
+
+    resRp.outstand = (realisasi - bapp).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    resRp.realisasi = (Number(realisasi)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    resRp.bapp = (Number(bapp)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
 
     return res.status(200).send({
       status: 'success',
