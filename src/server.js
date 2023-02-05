@@ -38,5 +38,5 @@ app.use(laporanRoutes);
 app.use(authRoutes);
 app.use(dropdownRoutes);
 app.use(dataRoutes);
-
+app.use(express.urlencoded({ extended: true }));
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));
