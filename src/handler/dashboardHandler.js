@@ -204,13 +204,18 @@ const getStatistikPko = async (req, res) => {
     const poolResQty = await pool.query(queryGetQty);
     const poolResRp = await pool.query(queryGetValRp);
 
-    poolResRp.rows[0].outstand = (poolResRp.rows[0].realisasi - poolResRp.rows[0].bapp).toString();
+    const { realisasi, bapp } = poolResRp.rows[0];
+    const resRp = {};
+    
+    resRp.outstand = (realisasi - bapp).toLocaleString("id-ID", {style:"currency", currency:"IDR"});
+    resRp.realisasi = (parseInt(realisasi)).toLocaleString("id-ID", {style:"currency", currency:"IDR"});
+    resRp.bapp = (parseInt(bapp)).toLocaleString("id-ID", {style:"currency", currency:"IDR"});
 
     return res.status(200).send({
       status: 'success',
       data: {
         qty: poolResQty.rows[0],
-        rp: poolResRp.rows[0],
+        rp: resRp,
       },
     });
   } catch (e) {
