@@ -53,7 +53,7 @@ const getData = async (req, res) => {
   };
   const data = await pool.query(queryGet);
 
-  for (let i = 0; i<(data.rows).length; i++){
+  for (let i = 0; i < (data.rows).length; i += 1) {
     data.rows[i].nilai = (Number(data.rows[i].nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
   }
   return res.status(200).send({
