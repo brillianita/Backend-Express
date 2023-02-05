@@ -119,12 +119,12 @@ const createKontraktor = async (req, res) => {
     await pool.query(qKontraktor);
 
     // await pool.query(qUser);
-    return res.status(201).json({
+    return res.status(201).send({
       status: 'success',
       message: 'Register Successfull!',
     });
   } catch (e) {
-    return res.status(500).json({
+    return res.status(500).send({
       status: 'error',
       message: e.message,
     });
@@ -181,7 +181,10 @@ const updatePassword = async (req, res) => {
       message: 'password has updated',
     });
   } catch (e) {
-    return res.status(403).json(e.message);
+    return res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
   }
 };
 
@@ -194,16 +197,25 @@ const deleteKontraktor = async (req, res) => {
     };
     const resKontraktor = await pool.query(queryKontraktor);
     if (!resKontraktor.rows[0]) {
-      return res.status(201).json({ message: 'User not found' });
+      return res.status(404).send({
+        status: 'fail',
+        message: 'User not found',
+      });
     }
     const queryDelete = {
       text: 'DELETE FROM users WHERE id=$1',
       values: [id],
     };
     await pool.query(queryDelete);
-    return res.status(201).json({ message: 'User has been removed' });
+    return res.status(201).send({
+      status: 'success',
+      message: 'User has been removed',
+    });
   } catch (e) {
-    return res.status(403).json(e.message);
+    return res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
   }
 };
 

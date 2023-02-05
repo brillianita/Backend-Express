@@ -164,7 +164,7 @@ const updateLaporan = async (req, res) => {
     const query = {
       text: `UPDATE laporan SET jenis_laporan = '${jenisLaporan}', nama_proyek = '${namaProyek}', nama_vendor = '${namaVendor}', file = '${namaFile}' WHERE id = ${id} RETURNING *`,
     };
-    const result = await pool.query(query);
+    await pool.query(query);
     fs.unlink(directoryPath + resFile.rows[0].file, (err) => {
       if (err) {
         console.log('ini error', err);
@@ -173,7 +173,7 @@ const updateLaporan = async (req, res) => {
     });
     return res.status(201).send({
       status: 'success',
-      data: result.rows[0],
+      message: 'Laporan has been updated successfully',
     });
   } catch (e) {
     return res.status(500).send({
