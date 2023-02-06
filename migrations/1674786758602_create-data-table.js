@@ -80,7 +80,7 @@ exports.up = ((pgm) => {
     no_kontrak: {
       type: 'VARCHAR',
       notNull: true,
-    }
+    },
   });
 });
 
