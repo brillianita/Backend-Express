@@ -465,7 +465,7 @@
   ```json
   {
     "status": "success",
-    "message": "password has updated"
+    "message": "password has been updated"
   }
   ````
 
@@ -485,12 +485,13 @@
         "id": 2,
         "jenis_laporan": "Laporan mingguan",
         "urutan_lap": 1,
-        "created_at": "2023-02-04T16:00:00.000Z",
-        "nama_proyek": "ini",
+        "created_at": "2023-02-05T16:00:00.000Z",
         "nama_vendor": "hdhdh",
-        "nomor_kontrak": "icebear",
         "catatan": "Revisi",
-        "status": "Ditinjau"
+        "status": "Ditinjau",
+        "id_datum": 69,
+        "no_proyek": "8400001417",
+        "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
       },...
     ]
   }
@@ -509,12 +510,13 @@
               "id": 2,
               "jenis_laporan": "Laporan mingguan",
               "urutan_lap": 1,
-              "created_at": "2023-02-04T16:00:00.000Z",
-              "nama_proyek": "ini",
+              "created_at": "2023-02-05T16:00:00.000Z",
               "nama_vendor": "hdhdh",
-              "nomor_kontrak": "icebear",
               "catatan": "Revisi",
-              "status": "Ditinjau"
+              "status": "Ditinjau",
+              "id_datum": 69,
+              "no_proyek": "8400001417",
+              "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
             },..
           ],
               "page": {
@@ -544,12 +546,12 @@
             "id": 2,
             "jenis_laporan": "Laporan mingguan",
             "urutan_lap": 1,
-            "created_at": "2023-02-04T16:00:00.000Z",
-            "nama_proyek": "ini",
             "nama_vendor": "hdhdh",
-            "nomor_kontrak": "icebear",
             "catatan": "Revisi",
-            "status": "Ditinjau"
+            "status": "Ditinjau",
+            "id_datum": 69,
+            "no_proyek": "8400001417",
+            "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
           },
         ]
     }
@@ -566,10 +568,9 @@
     { 
       "file": FILE | required,
       "jenisLaporan" : string | required,
-      "urutanLap" : integer | for laporan harian, bulanan, mingguan, 
-      "namaProyek": string | required,
+      "urutanLap" : integer | required for laporan harian, bulanan, mingguan, 
+      "noProyek": string | required,
       "namaVendor": string |required,
-      "nomorKontrak": string | required,
     }
   ```
   - body response: 
@@ -591,10 +592,9 @@
     { 
       "file": FILE | required,
       "jenisLaporan" : string | required,
-      "urutanLap" : integer | for laporan harian, bulanan, mingguan, 
-      "namaProyek": string | required,
+      "urutanLap" : integer | required for laporan harian, bulanan, mingguan, 
+      "noProyek": string | required,
       "namaVendor": string |required,
-      "nomorKontrak": string | required,
     }
   ```
   - body response: 
@@ -603,4 +603,175 @@
     "status": "success",
     "message": "laporan has been updated successfully"
   }
-  ````          
+  ```` 
+
+### Accessing Laporan (For Admin or Staff)
+- Get Recap
+  - method: `GET`
+  - endpoint: `/allLaporan`
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": 2,
+        "jenis_laporan": "Laporan mingguan",
+        "urutan_lap": 1,
+        "nama_vendor": "hdhdh",
+        "catatan": "Revisi",
+        "status": "Ditinjau",
+        "id_datum": 69,
+        "file": "1675664049731-test-form bakp.pdf",
+        "created_at": "2023-02-05T16:00:00.000Z",
+        "no_proyek": "8400001417",
+        "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+      },...
+    ]
+  }
+  ```
+  ---- **_Pagination_** ----     
+     - endpoint: `/allLaporan?pageSize=10&currentPage=1`  
+      will show 10 first laporan.  
+      `pageSize` stand for how many laporan that can be shown in one page.  
+      `currentPage` stand for laporan current page. 
+     - body response:
+     ```json
+      {
+          "status": "success",
+          "data": [
+            {
+              "id": 2,
+              "jenis_laporan": "Laporan mingguan",
+              "urutan_lap": 1,
+              "nama_vendor": "hdhdh",
+              "catatan": "Revisi",
+              "status": "Ditinjau",
+              "id_datum": 69,
+              "file": "1675664049731-test-form bakp.pdf",
+              "created_at": "2023-02-05T16:00:00.000Z",
+              "no_proyek": "8400001417",
+              "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+            },..
+          ],
+              "page": {
+              "page_size": "2",
+              "total_rows": "19",
+              "total_pages": 10,
+              "currentPage": "1"
+          }
+      }
+    ```
+  ---- **_Search_** ----    
+  - endpoint: `/allLaporan?search=brillianita`  
+  will filter the laporan and only show the laporan within `search` Brillianita 
+
+- Get laporan By Id laporan
+  - method: `GET`
+  - endpoint: `/detailLaporan/:id`,
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response: 
+  ```json
+    {
+        "status": "success",
+        "data": [
+          {
+            "id": 2,
+            "jenis_laporan": "Laporan mingguan",
+            "urutan_lap": 1,
+            "nama_vendor": "hdhdh",
+            "catatan": "Revisi",
+            "status": "Ditinjau",
+            "id_datum": 69,
+            "file": "1675664049731-test-form bakp.pdf",
+            "created_at": "2023-02-05T16:00:00.000Z",
+            "no_proyek": "8400001417",
+            "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+          },
+        ]
+    }
+  ```
+
+- Update Laporan stat
+  - method: `PUT`
+  - endpoint: `/laporanStat/edit/:id`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body request:
+  ```json
+    { 
+      "status": string | required,
+      "catatan": string |required,
+    }
+  ```
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "status has been updated successfully"
+  }
+  ````              
+- Delete Laporan 
+  - method: `DELETE`
+  - endpoint: `/laporan/:id`,
+  - Authorization:
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "message": "laporan laporan has been deleted!"
+  }
+  ````  
+
+### Accessing dropdown nomor & nama proyek
+- Get Recap
+  - method: `GET`
+  - endpoint: `/noNmProyek`
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": []
+  }
+  ---- **_noKontrak_** ----    
+  - endpoint: `/allLaporan?noKontrak=12845985`  
+  will filter the laporan and only show the laporan within `noKontrak` 12845985 
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "no_proyek": "8600013766",
+        "no_kontrak": "12845985"
+      },...
+    ]
+  }
+  ```
+  ---- **_noProyek_** ----    
+  - endpoint: `/allLaporan?noKontrak=12845985&noProyek=8600013766`  
+  will filter the laporan and only show the laporan within `noKontrak` 12845985 and `noProyek` 8600013766 
+  - body response: 
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "no_proyek": "8600013766",
+        "nm_proyek": "Jasa Perbaikan IPAL seksi Rumah Tangga",
+        "no_kontrak": "12845985"
+      },...
+    ]
+  }
+  ```                
