@@ -6,6 +6,6 @@ const router = Router();
 router.post('/admin/tambah', adminHandler.createAdmin);
 router.get('/admin', adminHandler.getAllAdmin);
 router.get('/admin/:id', adminHandler.getAdminById);
-router.put('/admin/:id', adminHandler.updatePassword);
+router.put('/admin/:id', adminHandler.updateAdmin);
 
 module.exports = router;

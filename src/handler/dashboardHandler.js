@@ -18,17 +18,29 @@ const getData = async (req, res) => {
 
 const getStatistikbyDataStatus = async (req, res) => {
   try {
-    const { tahun } = req.query;
+    const { tahun, nomorKontrak } = req.query;
 
     if (!tahun || Number.isNaN(Number(tahun))) {
       throw new InvariantError('Gagal mengambil data. Mohon isi tahun project dengan benar');
     }
-    const queryGet = {
-      text: "SELECT COUNT(id_datum) as totalProject, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'preparing') as preparing, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'in progress') as inPro, COUNT(id_datum) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex, COUNT(id_datum) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex FROM data WHERE tahun = $1;",
-      values: [tahun],
-    };
+    let queryGet;
+    if (nomorKontrak) {
+      queryGet = {
+        text: "SELECT COUNT(id_datum) as totalProject, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'preparing') as preparing, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'in progress') as inPro, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex FROM data WHERE tahun = $1 AND no_kontrak = $2;",
+        values: [tahun, nomorKontrak],
+      };
+    } else {
+      queryGet = {
+        text: "SELECT COUNT(id_datum) as totalProject, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'preparing') as preparing, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'in progress') as inPro, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex FROM data WHERE tahun = $1;",
+        values: [tahun],
+      };
+    }
     const poolRes = await pool.query(queryGet);
     const data = poolRes.rows[0];
+
+    data.opex = (Number(data.opex)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+
+    data.capex = (Number(data.capex)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
 
     const {
       totalproject, completed, preparing, inpro,
@@ -45,6 +57,16 @@ const getStatistikbyDataStatus = async (req, res) => {
     data.persenComp = [persenComp, (100 - persenComp).toFixed(1)];
     data.persenInpro = [persenInpro, (100 - persenInpro).toFixed(1)];
     data.persenprep = [persenprep, (100 - persenprep).toFixed(1)];
+
+    if (Number.isNaN(Number(persenComp))) {
+      data.persenComp = [completed, (100 - completed)];
+    }
+    if (Number.isNaN(Number(persenInpro))) {
+      data.persenInpro = [inpro, (100 - inpro)];
+    }
+    if (Number.isNaN(Number(persenprep))) {
+      data.persenprep = [preparing, (100 - preparing)];
+    }
 
     return res.status(200).send({
       status: 'success',
@@ -167,14 +189,23 @@ const getStatistikMonPr = async (req, res) => {
 const getStatistikPrKonstruksi = async (req, res) => {
   try {
     const queryGet = {
-      text: "SELECT COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'user') as user, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'rb/capex') as rbCapex, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'pengadaan') as pengadaan, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'konstruksi') as konstruksi, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'not_set') as not_set FROM monitoring_pr;",
+      text: "SELECT COUNT(id_monitor) as total, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'user') as user, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'rb/capex') as rbCapex, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'pengadaan') as pengadaan, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'konstruksi') as konstruksi, COUNT(id_monitor) FILTER (WHERE LOWER(pic) = 'not_set') as not_set FROM monitoring_pr;",
     };
     const poolRes = await pool.query(queryGet);
+    const data = poolRes.rows[0];
+
+    data.user = ((data.user / data.total) * 100).toFixed(1);
+    data.rbcapex = ((data.rbcapex / data.total) * 100).toFixed(1);
+    data.pengadaan = ((data.pengadaan / data.total) * 100).toFixed(1);
+    data.konstruksi = ((data.konstruksi / data.total) * 100).toFixed(1);
+    data.not_set = ((data.not_set / data.total) * 100).toFixed(1);
+
+    delete data.total;
 
     return res.status(200).send({
       status: 'success',
       data: {
-        chart: poolRes.rows[0],
+        chart: data,
       },
     });
   } catch (e) {
