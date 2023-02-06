@@ -7,14 +7,14 @@ const addDatum = async (req, res) => {
   try {
     const {
       nmJenis, tahun, noProyek, namaProyek, namaRekanan,
-      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, noKontraktor
+      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, noKontrak
     } = req.body;
 
     const queryInsert = {
-      text: 'INSERT INTO data (id_datum, nm_jenis, tahun, no_proyek, nm_proyek, nm_rekanan, tgl_mulai, tgl_akhir, nilai, nm_kota, nm_lokasi, keterangan, no_kontraktor) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;',
+      text: 'INSERT INTO data (id_datum, nm_jenis, tahun, no_proyek, nm_proyek, nm_rekanan, tgl_mulai, tgl_akhir, nilai, nm_kota, nm_lokasi, keterangan, no_kontrak) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;',
       values: [
         nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai,
-        tglAkhir, nilai, nmKota, nmLokasi, keterangan, noKontraktor,
+        tglAkhir, nilai, nmKota, nmLokasi, keterangan, noKontrak,
       ],
     };
 
@@ -112,14 +112,14 @@ const editDatum = async (req, res) => {
 
     const {
       nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai, tglAkhir, nilai,
-      nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, noKontraktor,
+      nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, noKontrak,
     } = req.body;
 
     const queryUpdate = {
-      text: 'UPDATE data SET nm_jenis = $1, tahun = $2, no_proyek = $3, nm_proyek = $4, nm_rekanan = $5, tgl_mulai = $6, tgl_akhir = $7, nilai = $8, nm_kota = $9, nm_lokasi = $10, keterangan = $11, tgl_selesai = $12, tgl_bast1 = $13, batas_retensi = $14, no_kontraktor = $15 WHERE id_datum = $16 RETURNING *;',
+      text: 'UPDATE data SET nm_jenis = $1, tahun = $2, no_proyek = $3, nm_proyek = $4, nm_rekanan = $5, tgl_mulai = $6, tgl_akhir = $7, nilai = $8, nm_kota = $9, nm_lokasi = $10, keterangan = $11, tgl_selesai = $12, tgl_bast1 = $13, batas_retensi = $14, no_kontrak = $15 WHERE id_datum = $16 RETURNING *;',
       values: [
         nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai,
-        tglAkhir, nilai, nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, noKontraktor, idDatum,
+        tglAkhir, nilai, nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, noKontrak, idDatum,
       ],
     };
     let poolRes;

@@ -3,10 +3,10 @@ const dashboardHandler = require('../handler/dashboardHandler');
 
 const router = Router();
 
-router.get('/statdata', dashboardHandler.getStatistikbyDataStatus);
-router.get('/statplanactual/:id_datum', dashboardHandler.getStatistikPlanVsActual);
-router.get('/statmonPr', dashboardHandler.getStatistikMonPr);
-router.get('/statpicpr', dashboardHandler.getStatistikPrKonstruksi);
-router.get('/statpko', dashboardHandler.getStatistikPko);
+router.get('/stat/data', dashboardHandler.getStatistikbyDataStatus);
+router.get('/stat/planactual/:id_datum', dashboardHandler.getStatistikPlanVsActual);
+router.get('/stat/monPr', dashboardHandler.getStatistikMonPr);
+router.get('/stat/picpr', dashboardHandler.getStatistikPrKonstruksi);
+router.get('/stat/pko', dashboardHandler.getStatistikPko);
 
 module.exports = router;
