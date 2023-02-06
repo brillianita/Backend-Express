@@ -131,9 +131,14 @@ const createKontraktor = async (req, res) => {
   }
 };
 
-const updatePassword = async (req, res) => {
+const updateKontraktor = async (req, res) => {
   const { id } = req.params;
   const {
+    username,
+    jenisPekerjaan,
+    kontPelaksana,
+    namaPekerjaan,
+    lokasiPekerjaan,
     oldPass,
     newPass,
     confirmNewPass,
@@ -151,34 +156,46 @@ const updatePassword = async (req, res) => {
         message: 'invalid request',
       });
     }
-    const passwordIsValid = bcrypt.compareSync(
-      oldPass,
-      result.rows[0].password,
-    );
-    // If the password is not valid, send the error message
-    if (!passwordIsValid) {
-      return res.status(401).send({
-        status: 'fail',
-        message: 'Incorrect old password!',
-      });
-      // throw new AuthenticationError('Invalid Password!');
-    }
-    const hashPassword = bcrypt.hashSync(newPass, 8);
-    if (newPass !== confirmNewPass) {
-      return res.status(400).send({
-        status: 'fail',
-        message: 'Password and confirm password does not match',
-      });
-    }
-
-    const qUpdatePass = {
-      text: 'UPDATE users SET password = $1  WHERE id = $2;',
-      values: [hashPassword, id],
+    const qUpUsername = {
+      text: 'UPDATE users SET username = $1  WHERE id = $2;',
+      values: [username, id],
     };
-    await pool.query(qUpdatePass);
+    await pool.query(qUpUsername);
+    const qUpStaff = {
+      text: 'UPDATE kontraktor SET jenis_pekerjaan = $1, kont_pelaksana = $2, nama_pekerjaan = $3, lokasi_pekerjaan = $4  WHERE id_user = $5;',
+      values: [jenisPekerjaan, kontPelaksana, namaPekerjaan, lokasiPekerjaan, id],
+    };
+    await pool.query(qUpStaff);
+
+    if (oldPass && newPass && confirmNewPass) {
+      const passwordIsValid = bcrypt.compareSync(
+        oldPass,
+        result.rows[0].password,
+      );
+      // If the password is not valid, send the error message
+      if (!passwordIsValid) {
+        return res.status(401).send({
+          status: 'fail',
+          message: 'Incorrect old password!',
+        });
+        // throw new AuthenticationError('Invalid Password!');
+      }
+      const hashPassword = bcrypt.hashSync(newPass, 8);
+      if (newPass !== confirmNewPass) {
+        return res.status(400).send({
+          status: 'fail',
+          message: 'Password and confirm password does not match',
+        });
+      }
+      const qUpdatePass = {
+        text: 'UPDATE users SET password = $1  WHERE id = $2;',
+        values: [hashPassword, id],
+      };
+      await pool.query(qUpdatePass);
+    }
     return res.status(201).send({
       status: 'success',
-      message: 'password has updated',
+      message: 'Staff has been updated',
     });
   } catch (e) {
     return res.status(500).send({
@@ -224,5 +241,5 @@ module.exports = {
   getAllKontraktor,
   getKontraktorById,
   deleteKontraktor,
-  updatePassword,
+  updateKontraktor,
 };

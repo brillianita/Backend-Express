@@ -95,15 +95,15 @@ const getNoNmProyek = async (req, res) => {
   }
 };
 
-const getLaporan = async (req, res) => {
+const getProyek = async (req, res) => {
   const { nomorKontrak } = req.params;
   const { pageSize, currentPage, search } = req.query;
   try {
     let qFilter;
     if (!search) {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.created_at, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' ORDER BY LOWER(d.nm_proyek) ASC`;
+      qFilter = `SELECT l.id, l.nama_vendor, l.id_datum, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' ORDER BY LOWER(d.no_proyek) ASC`;
     } else {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.created_at, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' AND LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') ORDER BY LOWER(d.nm_proyek) ASC`;
+      qFilter = `SELECT l.id, l.nama_vendor, l.id_datum, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' AND LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -111,7 +111,7 @@ const getLaporan = async (req, res) => {
       const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
       const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
       const offset = (currentPage - 1) * pageSize;
-      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(nm_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
       return res.status(200).send({
         status: 'success',
         data: result.rows,
@@ -123,7 +123,71 @@ const getLaporan = async (req, res) => {
         },
       });
     }
-    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(nm_proyek) ASC;`);
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC;`);
+
+    return res.status(200).send({
+      status: 'success',
+      data: result.rows,
+    });
+  } catch (e) {
+    return res.status(500).send({
+      status: 'error',
+      // message: "Sorry there was a failure on our server."
+      message: e.message,
+    });
+  }
+  //   const directoryPath = path.join(__dirname, '..', '..', 'resources');
+  //   fs.readdir(directoryPath, (err, files) => {
+  //     if (err) {
+  //       res.status(500).send({
+  //         message: 'Unable to scan files!',
+  //       });
+  //     }
+  //     const fileInfos = [];
+  //     files.forEach((file) => {
+  //       fileInfos.push({
+  //         name: file,
+  //         url: baseUrl + file,
+  //       });
+  //     });
+  //     res.status(200).send(fileInfos);
+  //   });
+  // } catch (e) {
+  //   res.status(500).send({
+  //     status: 'fail',
+  //     message: e.message,
+  //   });
+  // }
+};
+const getLaporan = async (req, res) => {
+  const { noProyek } = req.params;
+  const { pageSize, currentPage, search } = req.query;
+  try {
+    let qFilter;
+    if (!search) {
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' ORDER BY LOWER(d.no_proyek) ASC`;
+    } else {
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' AND LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
+    }
+    let result = await pool.query(qFilter);
+
+    if (pageSize && currentPage) {
+      const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
+      const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
+      const offset = (currentPage - 1) * pageSize;
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      return res.status(200).send({
+        status: 'success',
+        data: result.rows,
+        page: {
+          page_size: pageSize,
+          total_rows: totalRows.rows[0].count,
+          total_pages: totalPages,
+          current_page: currentPage,
+        },
+      });
+    }
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC;`);
 
     return res.status(200).send({
       status: 'success',
@@ -242,14 +306,76 @@ const download = (req, res) => {
   });
 };
 
-const getAllLaporan = async (req, res) => {
+const getAllProyek = async (req, res) => {
   const { pageSize, currentPage, search } = req.query;
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, l.file, l.created_at, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum ORDER BY LOWER(d.no_proyek) ASC';
+      qFilter = 'SELECT l.id, l.nama_vendor, l.id_datum, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum ORDER BY LOWER(d.no_kontrak) ASC';
     } else {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, l.file, l.created_at, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE LOWER(jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
+      qFilter = `SELECT l.id, l.nama_vendor, l.id_datum, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE LOWER(jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_kontrak) ASC`;
+    }
+    let result = await pool.query(qFilter);
+
+    if (pageSize && currentPage) {
+      const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
+      const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
+      const offset = (currentPage - 1) * pageSize;
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_kontrak) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      return res.status(200).send({
+        status: 'success',
+        data: result.rows,
+        page: {
+          page_size: pageSize,
+          total_rows: totalRows.rows[0].count,
+          total_pages: totalPages,
+          current_page: currentPage,
+        },
+      });
+    }
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_kontrak) ASC;`);
+    return res.status(200).send({
+      status: 'success',
+      data: result.rows,
+    });
+  } catch (e) {
+    return res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
+  }
+  //   const directoryPath = path.join(__dirname, '..', '..', 'resources');
+  //   fs.readdir(directoryPath, (err, files) => {
+  //     if (err) {
+  //       res.status(500).send({
+  //         message: 'Unable to scan files!',
+  //       });
+  //     }
+  //     const fileInfos = [];
+  //     files.forEach((file) => {
+  //       fileInfos.push({
+  //         name: file,
+  //         url: baseUrl + file,
+  //       });
+  //     });
+  //     res.status(200).send(fileInfos);
+  //   });
+  // } catch (e) {
+  //   res.status(500).send({
+  //     status: 'fail',
+  //     message: e.message,
+  //   });
+  // }
+};
+const getAllLaporan = async (req, res) => {
+  const { noProyek } = req.params;
+  const { pageSize, currentPage, search } = req.query;
+  try {
+    let qFilter;
+    if (!search) {
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, l.file, l.created_at, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' ORDER BY LOWER(d.no_proyek) ASC`;
+    } else {
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, l.file, l.created_at, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' AND LOWER(jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -259,7 +385,7 @@ const getAllLaporan = async (req, res) => {
       const offset = (currentPage - 1) * pageSize;
       result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
       const data = result.rows;
-      const newRes = data.map((obj) => (typeof (obj.id) === 'number' ? { ...obj, file: `${baseUrl}${obj.file}` } : obj));
+      const newRes = data.map((obj) => (typeof (obj.id) === 'number' ? { ...obj, file: `${baseUrl}${obj.file}`, created_at: obj.created_at.toJSON().slice(0, 10).replace(/-/g, '/') } : obj));
       return res.status(200).send({
         status: 'success',
         data: newRes,
@@ -273,7 +399,7 @@ const getAllLaporan = async (req, res) => {
     }
     result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC;`);
     const data = result.rows;
-    const newRes = data.map((obj) => (typeof (obj.id) === 'number' ? { ...obj, file: `${baseUrl}${obj.file}` } : obj));
+    const newRes = data.map((obj) => (typeof (obj.id) === 'number' ? { ...obj, file: `${baseUrl}${obj.file}`, created_at: obj.created_at.toJSON().slice(0, 10).replace(/-/g, '/') } : obj));
     return res.status(200).send({
       status: 'success',
       data: newRes,
@@ -369,9 +495,11 @@ const deleteLaporan = async (req, res) => {
 module.exports = {
   getNoNmProyek,
   createLaporan,
+  getProyek,
   getLaporan,
   getLaporanDetail,
   download,
+  getAllProyek,
   getAllLaporan,
   updateLaporan,
   updateStat,

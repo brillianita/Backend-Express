@@ -7,6 +7,6 @@ router.post('/kontraktor/tambah', kontraktorHandler.createKontraktor);
 router.get('/kontraktor', kontraktorHandler.getAllKontraktor);
 router.get('/kontraktor/:id', kontraktorHandler.getKontraktorById);
 router.delete('/kontraktor/:id', kontraktorHandler.deleteKontraktor);
-router.put('/kontraktor/:id', kontraktorHandler.updatePassword);
+router.put('/kontraktor/:id', kontraktorHandler.updateKontraktor);
 
 module.exports = router;
