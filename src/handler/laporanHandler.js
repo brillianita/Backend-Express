@@ -146,7 +146,7 @@ const getLaporanDetail = async (req, res) => {
   const { id } = req.params;
   try {
     const query = {
-      text: 'SELECT id, jenis_laporan, urutan_lap, created_at, nama_proyek, nama_vendor, nomor_kontrak, catatan, status FROM laporan WHERE id = $1',
+      text: 'SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE id = $1',
       values: [id],
     };
     const result = await pool.query(query);
@@ -165,16 +165,32 @@ const getLaporanDetail = async (req, res) => {
 
 const updateLaporan = async (req, res) => {
   const { id } = req.params;
-  const { jenisLaporan, namaProyek, namaVendor } = req.body;
+  const {
+    jenisLaporan,
+    urutanLap,
+    noProyek,
+    namaVendor,
+  } = req.body;
   const namaFile = req.file.filename;
   const directoryPath = path.join(__dirname, '..', '..', 'resources\\');
   try {
     const qFile = {
-      text: `SELECT file FROM laporan WHERE id = ${id}`,
+      text: `SELECT file, status, id FROM laporan WHERE id = ${id}`,
     };
     const resFile = await pool.query(qFile);
+    const qIdData = {
+      text: 'SELECT id_datum, no_proyek FROM data WHERE no_proyek = $1',
+      values: [noProyek],
+    };
+    const resQId = await pool.query(qIdData);
+    if (resFile.rows[0].status !== 'Revisi') {
+      return res.status(400).send({
+        status: 'fail',
+        message: 'Bad Request',
+      });
+    }
     const query = {
-      text: `UPDATE laporan SET jenis_laporan = '${jenisLaporan}', nama_proyek = '${namaProyek}', nama_vendor = '${namaVendor}', file = '${namaFile}' WHERE id = ${id} RETURNING *`,
+      text: `UPDATE laporan SET jenis_laporan = '${jenisLaporan}', urutan_lap = '${urutanLap}', nama_vendor = '${namaVendor}', file = '${namaFile}', id_datum = '${resQId.rows[0].id_datum}' WHERE id = ${id} RETURNING *`,
     };
     await pool.query(query);
     fs.unlink(directoryPath + resFile.rows[0].file, (err) => {
@@ -208,7 +224,7 @@ const download = (req, res) => {
   });
 };
 
-const getLaporanStaff = async (req, res) => {
+const getAllLaporan = async (req, res) => {
   const { pageSize, currentPage, search } = req.query;
   try {
     let qFilter;
@@ -273,26 +289,64 @@ const getLaporanStaff = async (req, res) => {
   // }
 };
 
-const getLaporanDetailStaff = async (req, res) => {
+const updateStat = async (req, res) => {
   const { id } = req.params;
+  const {
+    status,
+    catatan,
+  } = req.body;
+  console.log(status);
   try {
     const query = {
-      text: 'SELECT id, jenis_laporan, urutan_lap, created_at, nama_proyek, nama_vendor, nomor_kontrak, catatan, status FROM laporan WHERE id = $1',
-      values: [id],
+      text: `UPDATE laporan SET status = '${status}', catatan = '${catatan}' WHERE id = ${id} RETURNING *`,
     };
-    const result = await pool.query(query);
-    return res.status(200).send({
+    await pool.query(query);
+
+    res.status(201).send({
       status: 'success',
-      data: result.rows,
+      message: 'status laporan has been updated!',
     });
   } catch (e) {
-    return res.status(500).send({
+    res.status(500).send({
       status: 'error',
-      // message: "Sorry there was a failure on our server."
       message: e.message,
     });
   }
 };
+
+const deleteLaporan = async (req, res) => {
+  const { id } = req.params;
+  const directoryPath = path.join(__dirname, '..', '..', 'resources\\');
+  try {
+    const qFile = {
+      text: 'SELECT file, id FROM laporan WHERE id = $1',
+      values: [id],
+    };
+    const resFile = await pool.query(qFile);
+    const query = {
+      text: 'DELETE FROM laporan WHERE id=$1',
+      values: [id],
+    };
+    await pool.query(query);
+    fs.unlink(directoryPath + resFile.rows[0].file, (err) => {
+      if (err) {
+        console.log('ini error', err);
+      }
+      console.log('deleted');
+    });
+
+    res.status(201).send({
+      status: 'success',
+      message: 'status laporan has been deleted!',
+    });
+  } catch (e) {
+    res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
   getNamaProyek,
   getNoProyek,
@@ -300,7 +354,8 @@ module.exports = {
   getLaporan,
   getLaporanDetail,
   download,
-  getLaporanDetailStaff,
-  getLaporanStaff,
+  getAllLaporan,
   updateLaporan,
+  updateStat,
+  deleteLaporan,
 };
