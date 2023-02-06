@@ -19,11 +19,11 @@ exports.up = ((pgm) => {
     },
     tgl_mulai: {
       type: 'TIMESTAMP',
-      // notNull: true,
+      notNull: true,
     },
     tgl_akhir: {
       type: 'TIMESTAMP',
-      // notNull: true,
+      notNull: true,
     },
     nm_proyek: {
       type: 'TEXT',
@@ -43,7 +43,7 @@ exports.up = ((pgm) => {
     },
     nilai: {
       type: 'BIGINT',
-      // notNull: true,
+      notNull: true,
     },
     plan: {
       type: 'FLOAT',
@@ -63,7 +63,7 @@ exports.up = ((pgm) => {
     },
     status: {
       type: 'VARCHAR(50)',
-      // notNull: true,
+      notNull: true,
     },
     tgl_bast1: {
       type: 'TIMESTAMP',
@@ -77,6 +77,10 @@ exports.up = ((pgm) => {
       type: 'TEXT',
       // notNull: true,
     },
+    no_kontrak: {
+      type: 'VARCHAR',
+      notNull: true,
+    }
   });
 });
 
