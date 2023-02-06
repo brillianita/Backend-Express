@@ -13,10 +13,6 @@ exports.up = ((pgm) => {
       type: 'INTEGER',
       notNull: false,
     },
-    nama_proyek: {
-      type: 'VARCHAR',
-      notNull: true,
-    },
     nama_vendor: {
       type: 'VARCHAR',
       notNull: true,
@@ -25,26 +21,26 @@ exports.up = ((pgm) => {
       type: 'VARCHAR',
       notNull: true,
     },
-    nomor_kontrak: {
-      type: 'VARCHAR',
-      notNull: true,
-    },
     created_at: {
       type: 'TIMESTAMP',
       notNull: true,
     },
     catatan: {
-      type: 'VARCHAR',
+      type: 'TEXT',
     },
     status: {
       type: 'VARCHAR',
       notNull: true,
     },
+    id_datum: {
+      type: 'INTEGER',
+      notNull: true,
+    },
   });
   pgm.addConstraint(
     'laporan',
-    'fk_laporan.nomor_kontrak_kontraktor.nomor_kontrak',
-    'FOREIGN KEY(nomor_kontrak) REFERENCES kontraktor(nomor_kontrak) ON DELETE CASCADE',
+    'fk_laporan.id_datum_data.id_datum',
+    'FOREIGN KEY(id_datum) REFERENCES data(id_datum) ON DELETE CASCADE',
   );
 });
 exports.down = (pgm) => {
