@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const pool = require('../config/db');
 
-const baseUrl = 'http://localhost:3000/file/';
+const baseUrl = 'https://nice-cyan-sturgeon-toga.cyclic.app/file/';
 
 const createLaporan = async (req, res) => {
   const namaFile = req.file.filename;
@@ -35,40 +35,58 @@ const createLaporan = async (req, res) => {
   }
 };
 
-const getNoProyek = async (req, res) => {
-  const { noKontrak } = req.query;
-  try {
-    const query = {
-      text: 'SELECT no_proyek, no_kontrak FROM data WHERE no_kontrak = $1',
-      values: [noKontrak],
-    };
-    const result = await pool.query(query);
+// const getNoProyek = async (req, res) => {
+//   const { noKontrak } = req.query;
+//   try {
+//     const query = {
+//       text: 'SELECT no_proyek, no_kontrak FROM data WHERE no_kontrak = $1',
+//       values: [noKontrak],
+//     };
+//     const result = await pool.query(query);
 
-    return res.status(200).send({
-      status: 'success',
-      data: result.rows,
-    });
-  } catch (e) {
-    return res.status(500).send({
-      status: 'error',
-      data: e.message,
-    });
-  }
-};
+//     return res.status(200).send({
+//       status: 'success',
+//       data: result.rows,
+//     });
+//   } catch (e) {
+//     return res.status(500).send({
+//       status: 'error',
+//       data: e.message,
+//     });
+//   }
+// };
 
-const getNamaProyek = async (req, res) => {
+const getNoNmProyek = async (req, res) => {
   const { noProyek, noKontrak } = req.query;
   try {
-    const query = {
-      text: 'SELECT nm_proyek, no_proyek, no_kontrak FROM data WHERE no_proyek = $1 AND no_kontrak = $2',
-      values: [noProyek, noKontrak],
-    };
+    let query;
+    if (noProyek) {
+      query = {
+        text: 'SELECT no_proyek, nm_proyek, no_kontrak FROM data WHERE no_kontrak = $1 AND no_proyek = $2',
+        values: [noKontrak, noProyek],
+      };
+    } else {
+      query = {
+        text: 'SELECT no_proyek, nm_proyek, no_kontrak FROM data WHERE no_kontrak = $1',
+        values: [noKontrak],
+      };
+    }
     const result = await pool.query(query);
 
     return res.status(200).send({
       status: 'success',
       data: result.rows,
     });
+    // query = {
+    //   text: 'SELECT no_proyek, no_kontrak FROM data WHERE no_kontrak = $1',
+    //   values: [noKontrak],
+    // };
+    // const result = await pool.query(query);
+
+    // return res.status(200).send({
+    //   status: 'success',
+    //   data: result.rows,
+    // });
   } catch (e) {
     return res.status(500).send({
       status: 'error',
@@ -83,9 +101,9 @@ const getLaporan = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.created_at, l.nama_vendor, l.catatan, l.status, l.id_datum, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' ORDER BY LOWER(d.nm_proyek) ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.created_at, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' ORDER BY LOWER(d.nm_proyek) ASC`;
     } else {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.created_at, l.nama_vendor, l.catatan, l.status, l.id_datum, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' AND LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') ORDER BY LOWER(d.nm_proyek) ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.created_at, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' AND LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') ORDER BY LOWER(d.nm_proyek) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -146,7 +164,7 @@ const getLaporanDetail = async (req, res) => {
   const { id } = req.params;
   try {
     const query = {
-      text: 'SELECT id, jenis_laporan, urutan_lap, created_at, nama_proyek, nama_vendor, nomor_kontrak, catatan, status FROM laporan WHERE id = $1',
+      text: 'SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE id = $1',
       values: [id],
     };
     const result = await pool.query(query);
@@ -165,16 +183,32 @@ const getLaporanDetail = async (req, res) => {
 
 const updateLaporan = async (req, res) => {
   const { id } = req.params;
-  const { jenisLaporan, namaProyek, namaVendor } = req.body;
+  const {
+    jenisLaporan,
+    urutanLap,
+    noProyek,
+    namaVendor,
+  } = req.body;
   const namaFile = req.file.filename;
   const directoryPath = path.join(__dirname, '..', '..', 'resources\\');
   try {
     const qFile = {
-      text: `SELECT file FROM laporan WHERE id = ${id}`,
+      text: `SELECT file, status, id FROM laporan WHERE id = ${id}`,
     };
     const resFile = await pool.query(qFile);
+    const qIdData = {
+      text: 'SELECT id_datum, no_proyek FROM data WHERE no_proyek = $1',
+      values: [noProyek],
+    };
+    const resQId = await pool.query(qIdData);
+    if (resFile.rows[0].status !== 'Revisi') {
+      return res.status(400).send({
+        status: 'fail',
+        message: 'Bad Request',
+      });
+    }
     const query = {
-      text: `UPDATE laporan SET jenis_laporan = '${jenisLaporan}', nama_proyek = '${namaProyek}', nama_vendor = '${namaVendor}', file = '${namaFile}' WHERE id = ${id} RETURNING *`,
+      text: `UPDATE laporan SET jenis_laporan = '${jenisLaporan}', urutan_lap = '${urutanLap}', nama_vendor = '${namaVendor}', file = '${namaFile}', id_datum = '${resQId.rows[0].id_datum}' WHERE id = ${id} RETURNING *`,
     };
     await pool.query(query);
     fs.unlink(directoryPath + resFile.rows[0].file, (err) => {
@@ -208,14 +242,14 @@ const download = (req, res) => {
   });
 };
 
-const getLaporanStaff = async (req, res) => {
+const getAllLaporan = async (req, res) => {
   const { pageSize, currentPage, search } = req.query;
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT id, jenis_laporan, urutan_lap, created_at, file, nama_proyek, nama_vendor, nomor_kontrak, catatan, status FROM laporan ORDER BY LOWER(nama_proyek) ASC';
+      qFilter = 'SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, l.file, l.created_at, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum ORDER BY LOWER(d.no_proyek) ASC';
     } else {
-      qFilter = `SELECT id, jenis_laporan, created_at, file, nama_proyek, nama_vendor, nomor_kontrak, catatan, status FROM laporan WHERE LOWER(jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(nama_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') ORDER BY LOWER(nama_proyek) ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, l.file, l.created_at, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE LOWER(jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -223,10 +257,12 @@ const getLaporanStaff = async (req, res) => {
       const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
       const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
       const offset = (currentPage - 1) * pageSize;
-      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(nama_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      const data = result.rows;
+      const newRes = data.map((obj) => (typeof (obj.id) === 'number' ? { ...obj, file: `${baseUrl}${obj.file}` } : obj));
       return res.status(200).send({
         status: 'success',
-        data: result.rows,
+        data: newRes,
         page: {
           page_size: pageSize,
           total_rows: totalRows.rows[0].count,
@@ -235,7 +271,7 @@ const getLaporanStaff = async (req, res) => {
         },
       });
     }
-    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(nama_proyek) ASC;`);
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC;`);
     const data = result.rows;
     const newRes = data.map((obj) => (typeof (obj.id) === 'number' ? { ...obj, file: `${baseUrl}${obj.file}` } : obj));
     return res.status(200).send({
@@ -245,7 +281,6 @@ const getLaporanStaff = async (req, res) => {
   } catch (e) {
     return res.status(500).send({
       status: 'error',
-      // message: "Sorry there was a failure on our server."
       message: e.message,
     });
   }
@@ -273,34 +308,72 @@ const getLaporanStaff = async (req, res) => {
   // }
 };
 
-const getLaporanDetailStaff = async (req, res) => {
+const updateStat = async (req, res) => {
   const { id } = req.params;
+  const {
+    status,
+    catatan,
+  } = req.body;
+  console.log(status);
   try {
     const query = {
-      text: 'SELECT id, jenis_laporan, urutan_lap, created_at, nama_proyek, nama_vendor, nomor_kontrak, catatan, status FROM laporan WHERE id = $1',
-      values: [id],
+      text: `UPDATE laporan SET status = '${status}', catatan = '${catatan}' WHERE id = ${id} RETURNING *`,
     };
-    const result = await pool.query(query);
-    return res.status(200).send({
+    await pool.query(query);
+
+    res.status(201).send({
       status: 'success',
-      data: result.rows,
+      message: 'status laporan has been updated!',
     });
   } catch (e) {
-    return res.status(500).send({
+    res.status(500).send({
       status: 'error',
-      // message: "Sorry there was a failure on our server."
       message: e.message,
     });
   }
 };
+
+const deleteLaporan = async (req, res) => {
+  const { id } = req.params;
+  const directoryPath = path.join(__dirname, '..', '..', 'resources\\');
+  try {
+    const qFile = {
+      text: 'SELECT file, id FROM laporan WHERE id = $1',
+      values: [id],
+    };
+    const resFile = await pool.query(qFile);
+    const query = {
+      text: 'DELETE FROM laporan WHERE id=$1',
+      values: [id],
+    };
+    await pool.query(query);
+    fs.unlink(directoryPath + resFile.rows[0].file, (err) => {
+      if (err) {
+        console.log('ini error', err);
+      }
+      console.log('deleted');
+    });
+
+    res.status(201).send({
+      status: 'success',
+      message: 'laporan laporan has been deleted!',
+    });
+  } catch (e) {
+    res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
-  getNamaProyek,
-  getNoProyek,
+  getNoNmProyek,
   createLaporan,
   getLaporan,
   getLaporanDetail,
   download,
-  getLaporanDetailStaff,
-  getLaporanStaff,
+  getAllLaporan,
   updateLaporan,
+  updateStat,
+  deleteLaporan,
 };
