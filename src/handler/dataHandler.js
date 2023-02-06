@@ -53,9 +53,32 @@ const getData = async (req, res) => {
   };
   const data = await pool.query(queryGet);
 
+  const options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+
   for (let i = 0; i < (data.rows).length; i += 1) {
     data.rows[i].nilai = (Number(data.rows[i].nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+
+    data.rows[i].tgl_mulai = (data.rows[i].tgl_mulai).toLocaleString('id-ID', options);
+    data.rows[i].tgl_akhir = (data.rows[i].tgl_akhir).toLocaleString('id-ID', options);
+    if (data.rows[i].tgl_selesai) {
+      data.rows[i].tgl_selesai = (data.rows[i].tgl_selesai).toLocaleString('id-ID', options);
+    }
+    if (data.rows[i].tgl_bast1) {
+      data.rows[i].tgl_bast1 = (data.rows[i].tgl_bast1).toLocaleString('id-ID', options);
+    }
+    if (data.rows[i].batas_retensi) {
+      data.rows[i].batas_retensi = (data.rows[i].batas_retensi).toLocaleString('id-ID', options);
+    }
+
+    Object.keys(data.rows[i]).forEach((key) => {
+      if (data.rows[i][key] == null) { data.rows[i][key] = ''; }
+    });
   }
+
   return res.status(200).send({
     status: 'success',
     data: data.rows,
