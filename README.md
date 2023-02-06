@@ -202,16 +202,21 @@
   - body request:
   ```json
     { 
-      "oldPass": string | required,
-      "newPass": string | required,
-      "confirmNewPass": string | required
+      "jenisPekerjaan": string | required,
+      "kontPelaksana": string | required,
+      "namaPekerjaan": string | required,
+      "lokasiPekerjaan": string | required,
+      "username": string | required,
+      "oldPass": string,
+      "newPass": string,
+      "confirmNewPass": string
     }
   ```
   - body response: 
   ```json
   {
     "status": "success",
-    "message": "password has updated"
+    "message": "kontraktor data has been updated"
   }
   ````  
 - Delete Kontraktor By Id
@@ -329,16 +334,20 @@
   - body request:
   ```json
     { 
-      "oldPass": string | required,
-      "newPass": string | required,
-      "confirmNewPass": string | required
+      "nama": string | required,
+      "sap": string | required,
+      "seksi": string | required,
+      "username": string | required,
+      "oldPass": string,
+      "newPass": string,
+      "confirmNewPass": string
     }
   ```
   - body response: 
   ```json
   {
     "status": "success",
-    "message": "password has updated"
+    "message": "staff has been updated"
   }
   ````
 - Delete Staff By Id
@@ -456,23 +465,80 @@
   - body request:
   ```json
     { 
-      "oldPass": string | required,
-      "newPass": string | required,
-      "confirmNewPass": string | required
+      "nama": string | required,
+      "sap": string | required,
+      "seksi": string | required,
+      "username": string | required,
+      "oldPass": string,
+      "newPass": string,
+      "confirmNewPass": string
     }
   ```
   - body response: 
   ```json
   {
     "status": "success",
-    "message": "password has been updated"
+    "message": "admin data has been updated"
   }
   ````
 
 ### Accessing Laporan (For Kontraktor)
-- Get Recap
+- Get proyek by nomorKontrak
   - method: `GET`
-  - endpoint: `/laporan/:nomorKontrak`
+  - endpoint: `/proyek/:nomorKontrak`
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": 2,
+        "nama_vendor": "hdhdh",
+        "id_datum": 69,
+        "no_proyek": "8400001417",
+        "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
+        "no_kontrak": "0987654321"
+      },...
+    ]
+  }
+  ```
+  ---- **_Pagination_** ----     
+     - endpoint: `/proyek/:nomorKontrak?pageSize=10&currentPage=1`  
+      will show 10 first laporan.  
+      `pageSize` stand for how many laporan that can be shown in one page.  
+      `currentPage` stand for laporan current page. 
+     - body response:
+     ```json
+      {
+          "status": "success",
+          "data": [
+            {
+              "id": 2,
+              "nama_vendor": "hdhdh",
+              "id_datum": 69,
+              "no_proyek": "8400001417",
+              "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
+              "no_kontrak": "0987654321"
+            },..
+          ],
+              "page": {
+              "page_size": "2",
+              "total_rows": "19",
+              "total_pages": 10,
+              "currentPage": "1"
+          }
+      }
+    ```
+  ---- **_Search_** ----    
+  - endpoint: `/proyek/:nomorKontrak?search=brillianita`  
+  will filter the proyek and only show the proyek within `search` Brillianita 
+
+- Get laporan by noProyek
+  - method: `GET`
+  - endpoint: `/laporan/:noProyek`
   - authorization: 
     - type: `Bearer Token`,
     - token: `accessToken`
@@ -485,7 +551,6 @@
         "id": 2,
         "jenis_laporan": "Laporan mingguan",
         "urutan_lap": 1,
-        "created_at": "2023-02-05T16:00:00.000Z",
         "nama_vendor": "hdhdh",
         "catatan": "Revisi",
         "status": "Ditinjau",
@@ -497,7 +562,7 @@
   }
   ```
   ---- **_Pagination_** ----     
-     - endpoint: `/laporan/:nomorKontrak?pageSize=10&currentPage=1`  
+     - endpoint: `/laporan/:noProyek?pageSize=10&currentPage=1`  
       will show 10 first laporan.  
       `pageSize` stand for how many laporan that can be shown in one page.  
       `currentPage` stand for laporan current page. 
@@ -510,7 +575,6 @@
               "id": 2,
               "jenis_laporan": "Laporan mingguan",
               "urutan_lap": 1,
-              "created_at": "2023-02-05T16:00:00.000Z",
               "nama_vendor": "hdhdh",
               "catatan": "Revisi",
               "status": "Ditinjau",
@@ -528,8 +592,8 @@
       }
     ```
   ---- **_Search_** ----    
-  - endpoint: `/laporan/:nomorKontrak?search=brillianita`  
-  will filter the laporan and only show the laporan within `search` Brillianita 
+  - endpoint: `/laporan/:noProyek?search=brillianita`  
+  will filter the proyek and only show the proyek within `search` Brillianita 
 
 - Get laporan By Id laporan
   - method: `GET`
@@ -606,9 +670,89 @@
   ```` 
 
 ### Accessing Laporan (For Admin or Staff)
+- Get All Proyek
+  - method: `GET`
+  - endpoint: `/allProyek/`
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": [
+      {
+        "id": 3,
+        "nama_vendor": "hdhdh",
+        "id_datum": 69,
+        "no_proyek": "8400001417",
+        "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
+        "no_kontrak": "0987654321"
+      },...
+    ]
+  }
+  ```
+  ---- **_Pagination_** ----     
+     - endpoint: `/allProyek?pageSize=10&currentPage=1`  
+      will show 10 first proyek.  
+      `pageSize` stand for how many proyek that can be shown in one page.  
+      `currentPage` stand for proyek current page. 
+     - body response:
+     ```json
+      {
+          "status": "success",
+          "data": [
+            {
+              "id": 3,
+              "nama_vendor": "hdhdh",
+              "id_datum": 69,
+              "no_proyek": "8400001417",
+              "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
+              "no_kontrak": "0987654321"
+            },..
+          ],
+              "page": {
+              "page_size": "2",
+              "total_rows": "19",
+              "total_pages": 10,
+              "currentPage": "1"
+          }
+      }
+    ```
+  ---- **_Search_** ----    
+  - endpoint: `/allProyek?search=brillianita`  
+  will filter the proyek and only show the proyek within `search` Brillianita 
+
+- Get laporan By Id laporan
+  - method: `GET`
+  - endpoint: `/detailLaporan/:id`,
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response: 
+  ```json
+    {
+        "status": "success",
+        "data": [
+          {
+            "id": 2,
+            "jenis_laporan": "Laporan mingguan",
+            "urutan_lap": 1,
+            "nama_vendor": "hdhdh",
+            "catatan": "Revisi",
+            "status": "Ditinjau",
+            "id_datum": 69,
+            "file": "1675664049731-test-form bakp.pdf",
+            "created_at": "2023/02/05",
+            "no_proyek": "8400001417",
+            "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+          },
+        ]
+    }
+  ```
 - Get Recap
   - method: `GET`
-  - endpoint: `/allLaporan`
+  - endpoint: `/allLaporan/:noProyek`
   - authorization: 
     - type: `Bearer Token`,
     - token: `accessToken`
@@ -625,8 +769,8 @@
         "catatan": "Revisi",
         "status": "Ditinjau",
         "id_datum": 69,
-        "file": "1675664049731-test-form bakp.pdf",
-        "created_at": "2023-02-05T16:00:00.000Z",
+        "file": "BASEURL/1675664049731-test-form bakp.pdf",
+        "created_at": "2023/02/05",
         "no_proyek": "8400001417",
         "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
       },...
@@ -634,7 +778,7 @@
   }
   ```
   ---- **_Pagination_** ----     
-     - endpoint: `/allLaporan?pageSize=10&currentPage=1`  
+     - endpoint: `/allLaporan/:noProyek?pageSize=10&currentPage=1`  
       will show 10 first laporan.  
       `pageSize` stand for how many laporan that can be shown in one page.  
       `currentPage` stand for laporan current page. 
@@ -651,8 +795,8 @@
               "catatan": "Revisi",
               "status": "Ditinjau",
               "id_datum": 69,
-              "file": "1675664049731-test-form bakp.pdf",
-              "created_at": "2023-02-05T16:00:00.000Z",
+              "file": "BASEURL/1675664049731-test-form bakp.pdf",
+              "created_at": "2023/02/05",
               "no_proyek": "8400001417",
               "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
             },..
@@ -666,7 +810,7 @@
       }
     ```
   ---- **_Search_** ----    
-  - endpoint: `/allLaporan?search=brillianita`  
+  - endpoint: `/allLaporan/:noProyek?search=brillianita`  
   will filter the laporan and only show the laporan within `search` Brillianita 
 
 - Get laporan By Id laporan
@@ -689,7 +833,7 @@
             "status": "Ditinjau",
             "id_datum": 69,
             "file": "1675664049731-test-form bakp.pdf",
-            "created_at": "2023-02-05T16:00:00.000Z",
+            "created_at": "2023/02/05",
             "no_proyek": "8400001417",
             "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
           },
