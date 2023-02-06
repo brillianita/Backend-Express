@@ -7,7 +7,7 @@ const addDatum = async (req, res) => {
   try {
     const {
       nmJenis, tahun, noProyek, namaProyek, namaRekanan,
-      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, noKontrak
+      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, noKontrak,
     } = req.body;
 
     const queryInsert = {
@@ -118,8 +118,8 @@ const editDatum = async (req, res) => {
     const queryUpdate = {
       text: 'UPDATE data SET nm_jenis = $1, tahun = $2, no_proyek = $3, nm_proyek = $4, nm_rekanan = $5, tgl_mulai = $6, tgl_akhir = $7, nilai = $8, nm_kota = $9, nm_lokasi = $10, keterangan = $11, tgl_selesai = $12, tgl_bast1 = $13, batas_retensi = $14, no_kontrak = $15 WHERE id_datum = $16 RETURNING *;',
       values: [
-        nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai,
-        tglAkhir, nilai, nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, noKontrak, idDatum,
+        nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai, tglAkhir,
+        nilai, nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, noKontrak, idDatum,
       ],
     };
     let poolRes;

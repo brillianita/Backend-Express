@@ -41,7 +41,7 @@ const addMonitoringPR = async (req, res) => {
 
     return res.status(201).send({
       status: 'success',
-      message: 'Berhasil menambahkan data baru',
+      message: 'Berhasil menambahkan data Monitoring PR baru',
       data: poolRes.rows[0],
     });
   } catch (e) {
@@ -55,7 +55,7 @@ const addMonitoringPR = async (req, res) => {
     }
     return res.status(500).send({
       status: 'error',
-      message: 'Gagal menambahkan data',
+      message: 'Gagal menambahkan data Monitoring PR',
     });
   }
 };
@@ -109,7 +109,7 @@ const getDetailMonPr = async (req, res) => {
     }
     return res.status(500).send({
       status: 'error',
-      message: 'Gagal mengambil data',
+      message: 'Gagal mengambil data Monitoring PR',
     });
   }
 };
@@ -156,12 +156,12 @@ const editMonPr = async (req, res) => {
       throw new InvariantError(e);
     }
     if (!poolRes.rows[0]) {
-      throw new NotFoundError(`Tidak dapat menemukan data ${idMonitor}`);
+      throw new NotFoundError(`Tidak dapat menemukan data Monitoring PR ${idMonitor}`);
     }
 
     return res.status(201).send({
       status: 'success',
-      message: 'Berhasil mengedit data',
+      message: 'Berhasil mengedit data Monitoring PR',
       data: poolRes.rows[0],
     });
   } catch (e) {
@@ -175,7 +175,7 @@ const editMonPr = async (req, res) => {
     }
     return res.status(500).send({
       status: 'error',
-      message: 'Gagal menambahkan data',
+      message: 'Gagal mengedit data Monitoring PR',
     });
   }
 };
@@ -195,12 +195,12 @@ const deleteMonPr = async (req, res) => {
     const poolDel = await pool.query(queryDel);
 
     if (!(poolDel.rows[0])) {
-      throw new NotFoundError(`Data dengan id: ${idMonitor} tidak ditemukan`);
+      throw new NotFoundError(`Data Monitoring PR dengan id: ${idMonitor} tidak ditemukan`);
     }
 
     return res.status(200).send({
       status: 'success',
-      message: `Data proyek ${poolDel.rows[0].description} berhasil dihapus`,
+      message: `Data Monitoring PR ${poolDel.rows[0].description} berhasil dihapus`,
     });
   } catch (e) {
     console.error(e);
@@ -213,7 +213,7 @@ const deleteMonPr = async (req, res) => {
     }
     return res.status(500).send({
       status: 'error',
-      message: 'Gagal menghapus data',
+      message: 'Gagal menghapus data Monitoring PR',
     });
   }
 };
