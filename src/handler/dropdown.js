@@ -24,4 +24,28 @@ const dropdownProyek = async (req, res) => {
   }
 };
 
-module.exports = { dropdownProyek };
+const dropdownKontraktor = async (req, res) => {
+  try {
+    const queryGet = {
+      text: 'SELECT id, nomor_kontrak FROM kontraktor',
+    };
+
+    const poolRes = await pool.query(queryGet);
+    const data = poolRes.rows;
+
+    return res.status(200).send({
+      status: 'success',
+      data: {
+        dropdown: data,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal mengambil data',
+    });
+  }
+};
+
+module.exports = { dropdownProyek, dropdownKontraktor };
