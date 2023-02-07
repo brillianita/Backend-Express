@@ -888,8 +888,9 @@
     "status": "success",
     "data": []
   }
+  ```
   ---- **_noKontrak_** ----    
-  - endpoint: `/allLaporan?noKontrak=12845985`  
+  - endpoint: `/noNmProyek?noKontrak=12845985`  
   will filter the laporan and only show the laporan within `noKontrak` 12845985 
   - body response: 
   ```json
@@ -904,7 +905,7 @@
   }
   ```
   ---- **_noProyek_** ----    
-  - endpoint: `/allLaporan?noKontrak=12845985&noProyek=8600013766`  
+  - endpoint: `/noNmProyek?noKontrak=12845985&noProyek=8600013766`  
   will filter the laporan and only show the laporan within `noKontrak` 12845985 and `noProyek` 8600013766 
   - body response: 
   ```json
