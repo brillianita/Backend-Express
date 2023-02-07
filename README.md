@@ -918,4 +918,141 @@
       },...
     ]
   }
-  ```                
+  ```        
+  
+  ### Accessing Dashboard (For Admin)
+- Get Statistik project data
+  - method: `GET`
+  - endpoint: `/stat/data?tahun=2021`
+  - authorization: 
+    - type: `Soon`,
+    - token: `Soon`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": {
+        "totalproject": "26",
+        "completed": "24",
+        "preparing": "0",
+        "inpro": "2",
+        "opex": "Rp 4.263.916.373,00",
+        "capex": "Rp 38.713.465.553,00",
+        "persenComp": [
+            "92.3",
+            "7.7"
+        ],
+        "persenInpro": [
+            "7.7",
+            "92.3"
+        ],
+        "persenprep": [
+            "0.0",
+            "100.0"
+        ]
+    }
+  }
+  ```
+
+- Get Statistik Plan Actual By Id Datum
+  - method: `GET`
+  - endpoint: `/stat/planactual/78`
+  - authorization: 
+    - type: `Soon`,
+    - token: `Soon`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "idDatum": "78",
+      "totalWeek": 26,
+      "arrOfchart": [
+          {
+              "week": 1,
+              "plan": 0.2,
+              "actual": 0.12
+          },
+          {
+              "week": 2,
+              "plan": 0.3,
+              "actual": 0.24
+          },
+          ...
+        ]
+    }
+  }
+  ```
+  
+  - Get Statistik Monitoring PR
+  - method: `GET`
+  - endpoint: `/stat/monPr`
+  - authorization: 
+    - type: `Soon`,
+    - token: `Soon`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": {
+        "chart": {
+            "tender": "7",
+            "po": "31",
+            "evalkom": "5",
+            "evaltek": "1",
+            "approval_pr": "0",
+            "submit_eproc": "0",
+            "eval_ece": "0",
+            "eceboq": "1",
+            "not_set": "0"
+          }
+      }
+  }
+  ```
+  
+ - Get Statistik Monitoring PR PIC
+  - method: `GET`
+  - endpoint: `/stat/picpr`
+  - authorization: 
+    - type: `Soon`,
+    - token: `Soon`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": {
+        "chart": {
+            "user": "2.2",
+            "rbcapex": "2.2",
+            "pengadaan": "26.7",
+            "konstruksi": "68.9",
+            "not_set": "0.0"
+        }
+    }
+  }
+  ```
+
+- Get Statistik PKO
+  - method: `GET`
+  - endpoint: `/stat/pko?tahun=2021`
+  - authorization: 
+    - type: `Soon`,
+    - token: `Soon`
+  - body response:
+  ```json
+  {
+    "status": "success",
+    "data": {
+        "qty": {
+            "completed": "47",
+            "inpro": "4",
+            "pending": "0"
+        },
+        "rp": {
+            "outstand": "Rp 761.418.925,00",
+            "realisasi": "Rp 1.425.689.820,00",
+            "bapp": "Rp 664.270.895,00"
+        }
+    }
+  }
+  ```
