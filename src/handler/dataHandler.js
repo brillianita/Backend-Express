@@ -51,7 +51,8 @@ const getData = async (req, res) => {
   const queryGet = {
     text: 'SELECT * FROM data order by id_datum',
   };
-  const data = await pool.query(queryGet);
+  const dataRes = await pool.query(queryGet);
+  const data = dataRes.rows;
 
   const options = {
     year: 'numeric',
@@ -59,29 +60,30 @@ const getData = async (req, res) => {
     day: 'numeric',
   };
 
-  for (let i = 0; i < (data.rows).length; i += 1) {
-    data.rows[i].nilai = (Number(data.rows[i].nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+  for (let i = 0; i < (data).length; i += 1) {
+    data[i].nilai = (Number(data[i].nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
 
-    data.rows[i].tgl_mulai = (data.rows[i].tgl_mulai).toLocaleString('id-ID', options);
-    data.rows[i].tgl_akhir = (data.rows[i].tgl_akhir).toLocaleString('id-ID', options);
-    if (data.rows[i].tgl_selesai) {
-      data.rows[i].tgl_selesai = (data.rows[i].tgl_selesai).toLocaleString('id-ID', options);
+    data[i].tgl_mulai = (data[i].tgl_mulai).toLocaleString('id-ID', options);
+    data[i].tgl_akhir = (data[i].tgl_akhir).toLocaleString('id-ID', options);
+
+    if (data[i].tgl_selesai) {
+      data[i].tgl_selesai = (data[i].tgl_selesai).toLocaleString('id-ID', options);
     }
-    if (data.rows[i].tgl_bast1) {
-      data.rows[i].tgl_bast1 = (data.rows[i].tgl_bast1).toLocaleString('id-ID', options);
+    if (data[i].tgl_bast1) {
+      data[i].tgl_bast1 = (data[i].tgl_bast1).toLocaleString('id-ID', options);
     }
-    if (data.rows[i].batas_retensi) {
-      data.rows[i].batas_retensi = (data.rows[i].batas_retensi).toLocaleString('id-ID', options);
+    if (data[i].batas_retensi) {
+      data[i].batas_retensi = (data[i].batas_retensi).toLocaleString('id-ID', options);
     }
 
-    Object.keys(data.rows[i]).forEach((key) => {
-      if (data.rows[i][key] == null) { data.rows[i][key] = ''; }
+    Object.keys(data[i]).forEach((key) => {
+      if (data[i][key] == null) { data[i][key] = ''; }
     });
   }
 
   return res.status(200).send({
     status: 'success',
-    data: data.rows,
+    data,
   });
 };
 
@@ -98,16 +100,40 @@ const getDatum = async (req, res) => {
       values: [idDatum],
     };
     const poolDatum = await pool.query(queryGet);
+    const datum = poolDatum.rows[0];
 
-    if (!(poolDatum.rows[0])) {
+    if (!(datum)) {
       throw new NotFoundError(`Data dengan id: ${idDatum} tidak ditemukan`);
     }
 
-    poolDatum.rows[0].nilai = (Number(poolDatum.rows[0].nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    datum.nilai = (Number(datum.nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+
+    const options = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
+
+    datum.tgl_mulai = (datum.tgl_mulai).toLocaleString('id-ID', options);
+    datum.tgl_akhir = (datum.tgl_akhir).toLocaleString('id-ID', options);
+
+    if (datum.tgl_selesai) {
+      datum.tgl_selesai = (datum.tgl_selesai).toLocaleString('id-ID', options);
+    }
+    if (datum.tgl_bast1) {
+      datum.tgl_bast1 = (datum.tgl_bast1).toLocaleString('id-ID', options);
+    }
+    if (datum.batas_retensi) {
+      datum.batas_retensi = (datum.batas_retensi).toLocaleString('id-ID', options);
+    }
+
+    Object.keys(datum).forEach((key) => {
+      if (datum[key] == null) { datum[key] = ''; }
+    });
 
     return res.status(200).send({
       status: 'success',
-      data: poolDatum.rows[0],
+      data: datum,
     });
   } catch (e) {
     console.error(e);
