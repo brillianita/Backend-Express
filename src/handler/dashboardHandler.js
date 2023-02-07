@@ -26,21 +26,21 @@ const getStatistikbyDataStatus = async (req, res) => {
     let queryGet;
     if (nomorKontrak) {
       queryGet = {
-        text: "SELECT COUNT(id_datum) as totalProject, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'preparing') as preparing, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'in progress') as inPro, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex FROM data WHERE tahun = $1 AND no_kontrak = $2;",
+        text: "SELECT COUNT(id_datum) as totalProject, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'preparing') as preparing, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'in progress') as inPro, COUNT(id_datum) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opexNilai, COUNT(id_datum) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capexNilai FROM data WHERE tahun = $1 AND no_kontrak = $2;",
         values: [tahun, nomorKontrak],
       };
     } else {
       queryGet = {
-        text: "SELECT COUNT(id_datum) as totalProject, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'preparing') as preparing, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'in progress') as inPro, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex FROM data WHERE tahun = $1;",
+        text: "SELECT COUNT(id_datum) as totalProject, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'preparing') as preparing, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'in progress') as inPro, COUNT(id_datum) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex_nilai, COUNT(id_datum) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex_nilai FROM data WHERE tahun = $1;",
         values: [tahun],
       };
     }
     const poolRes = await pool.query(queryGet);
     const data = poolRes.rows[0];
 
-    data.opex = (Number(data.opex)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    data.opex_nilai = (Number(data.opex_nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
 
-    data.capex = (Number(data.capex)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    data.capex_nilai = (Number(data.capex_nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
 
     const {
       totalproject, completed, preparing, inpro,
