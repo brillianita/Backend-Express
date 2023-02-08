@@ -5,10 +5,9 @@ const uploadFile = require('../middleware/uploadFile');
 const router = Router();
 
 // KONTRAKTOR FEATURE
-router.get('/proyek/:nomorKontrak', laporanHandler.getProyek);
+router.get('/proyek/:idUser', laporanHandler.getProyekByIdKontraktor);
 router.get('/laporan/:noProyek', laporanHandler.getLaporan);
 router.post('/laporan/tambah', uploadFile.upload.single('file'), laporanHandler.createLaporan);
-router.get('/noNmProyek', laporanHandler.getNoNmProyek);
 router.get('/detailLaporan/:id', laporanHandler.getLaporanDetail);
 router.get('/file/:name', laporanHandler.download);
 router.put('/laporan/edit/:id', uploadFile.upload.single('file'), laporanHandler.updateLaporan);
