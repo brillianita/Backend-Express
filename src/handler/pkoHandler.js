@@ -11,6 +11,9 @@ const getPko = async (req, res) => {
 
   for (let i = 0; i < (data.rows).length; i += 1) {
     data.rows[i].nilai_project = (Number(data.rows[i].nilai_project)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+
+    data.rows[i].status_pko = data.rows[i].status;
+    delete data.rows[i].status;
   }
   return res.status(200).send({
     status: 'success',
@@ -22,14 +25,14 @@ const addPko = async (req, res) => {
   try {
     const {
       tahun, pekerjaan, notifikasi, nomorPo, tglMulai, targetSelesai,
-      status, keterangan, nilaiProject, statusPenagihan,
+      statusPko, keterangan, nilaiProject, statusPenagihan,
     } = req.body;
 
     const queryInsert = {
       text: 'INSERT INTO pko (id_pko, tahun, pekerjaan, notifikasi, nomor_po, tgl_mulai, target_selesai, status, keterangan, nilai_project, status_penagihan) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;',
       values: [
         tahun, pekerjaan, notifikasi, nomorPo, tglMulai, targetSelesai,
-        status, keterangan, nilaiProject, statusPenagihan,
+        statusPko, keterangan, nilaiProject, statusPenagihan,
       ],
     };
 
@@ -81,6 +84,9 @@ const getDetailPko = async (req, res) => {
     }
     poolRes.rows[0].nilai_project = (Number(poolRes.rows[0].nilai_project)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
 
+    poolRes.rows[0].status_pko = poolRes.rows[0].status;
+    delete poolRes.rows[0].status;
+
     return res.status(200).send({
       status: 'success',
       data: poolRes.rows[0],
@@ -111,14 +117,14 @@ const editPko = async (req, res) => {
 
     const {
       tahun, pekerjaan, notifikasi, nomorPo, tglMulai, targetSelesai,
-      status, keterangan, nilaiProject, statusPenagihan,
+      statusPko, keterangan, nilaiProject, statusPenagihan,
     } = req.body;
 
     const queryInsert = {
       text: 'UPDATE pko SET tahun = $1, pekerjaan = $2, notifikasi = $3, nomor_po = $4, tgl_mulai = $5, target_selesai = $6, status = $7, keterangan = $8, nilai_project = $9, status_penagihan = $10 WHERE id_pko = $11 RETURNING *;',
       values: [
         tahun, pekerjaan, notifikasi, nomorPo, tglMulai, targetSelesai,
-        status, keterangan, nilaiProject, statusPenagihan, idPko,
+        statusPko, keterangan, nilaiProject, statusPenagihan, idPko,
       ],
     };
 

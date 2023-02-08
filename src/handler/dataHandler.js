@@ -7,14 +7,14 @@ const addDatum = async (req, res) => {
   try {
     const {
       nmJenis, tahun, noProyek, namaProyek, namaRekanan,
-      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, noKontrak,
+      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, klasifikasi,
     } = req.body;
 
     const queryInsert = {
-      text: 'INSERT INTO data (id_datum, nm_jenis, tahun, no_proyek, nm_proyek, nm_rekanan, tgl_mulai, tgl_akhir, nilai, nm_kota, nm_lokasi, keterangan, no_kontrak) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;',
+      text: 'INSERT INTO data (id_datum, nm_jenis, tahun, no_proyek, nm_proyek, nm_rekanan, tgl_mulai, tgl_akhir, nilai, nm_kota, nm_lokasi, keterangan, klasifikasi) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;',
       values: [
         nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai,
-        tglAkhir, nilai, nmKota, nmLokasi, keterangan, noKontrak,
+        tglAkhir, nilai, nmKota, nmLokasi, keterangan, klasifikasi,
       ],
     };
 
@@ -65,6 +65,8 @@ const getData = async (req, res) => {
 
     data[i].tgl_mulai = (data[i].tgl_mulai).toLocaleString('id-ID', options);
     data[i].tgl_akhir = (data[i].tgl_akhir).toLocaleString('id-ID', options);
+    data[i].status_data = data[i].status;
+    delete data[i].status;
 
     if (data[i].tgl_selesai) {
       data[i].tgl_selesai = (data[i].tgl_selesai).toLocaleString('id-ID', options);
@@ -107,6 +109,8 @@ const getDatum = async (req, res) => {
     }
 
     datum.nilai = (Number(datum.nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    datum.status_data = datum.status;
+    delete datum.status;
 
     const options = {
       year: 'numeric',
@@ -161,14 +165,14 @@ const editDatum = async (req, res) => {
 
     const {
       nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai, tglAkhir, nilai,
-      nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, noKontrak,
+      nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, klasifikasi,
     } = req.body;
 
     const queryUpdate = {
-      text: 'UPDATE data SET nm_jenis = $1, tahun = $2, no_proyek = $3, nm_proyek = $4, nm_rekanan = $5, tgl_mulai = $6, tgl_akhir = $7, nilai = $8, nm_kota = $9, nm_lokasi = $10, keterangan = $11, tgl_selesai = $12, tgl_bast1 = $13, batas_retensi = $14, no_kontrak = $15 WHERE id_datum = $16 RETURNING *;',
+      text: 'UPDATE data SET nm_jenis = $1, tahun = $2, no_proyek = $3, nm_proyek = $4, nm_rekanan = $5, tgl_mulai = $6, tgl_akhir = $7, nilai = $8, nm_kota = $9, nm_lokasi = $10, keterangan = $11, tgl_selesai = $12, tgl_bast1 = $13, batas_retensi = $14, klasifikasi = $15 WHERE id_datum = $16 RETURNING *;',
       values: [
-        nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai, tglAkhir,
-        nilai, nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, noKontrak, idDatum,
+        nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai, tglAkhir, nilai,
+        nmKota, nmLokasi, keterangan, tglSelesai, tglBast1, batasRetensi, klasifikasi, idDatum,
       ],
     };
     let poolRes;
