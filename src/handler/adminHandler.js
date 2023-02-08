@@ -7,9 +7,9 @@ const getAllAdmin = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT s.id_user, s.nama, s.sap, s.seksi, u.username FROM admin AS s INNER JOIN users AS u ON s.id_user = u.id ORDER BY LOWER (sap) ASC';
+      qFilter = "SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE u.role='admin' ORDER BY LOWER (sap) ASC";
     } else {
-      qFilter = `SELECT s.id_user, s.nama, s.sap, s.seksi, u.username FROM admin AS s INNER JOIN users AS u ON s.id_user = u.id WHERE LOWER(s.nama) LIKE LOWER('%${search}%') OR LOWER(s.sap) LIKE LOWER('%${search}%') OR LOWER(s.seksi) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') ORDER BY LOWER(s.sap) ASC`;
+      qFilter = `SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE LOWER(a.nama) LIKE LOWER('%${search}%') OR LOWER(a.sap) LIKE LOWER('%${search}%') OR LOWER(a.seksi) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') AND u.role='admin'  ORDER BY LOWER(a.sap) ASC`;
     }
 
     let result = await pool.query(qFilter);
@@ -49,7 +49,7 @@ const getAdminById = async (req, res) => {
   try {
     const { id } = req.params;
     const query = {
-      text: 'SELECT s.id_user, s.nama, s.sap, s.seksi, u.username FROM admin AS s INNER JOIN users AS u ON s.id_user = u.id WHERE id_user=$1',
+      text: "SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE id_user=$1 AND u.role='admin'",
       values: [id],
     };
     const result = await pool.query(query);
@@ -113,7 +113,7 @@ const updateAdmin = async (req, res) => {
     };
     await pool.query(qUpUsername);
     const qUpAdmin = {
-      text: 'UPDATE admin SET nama = $1, sap = $2, seksi = $3  WHERE id_user = $4;',
+      text: 'UPDATE admin_staff SET nama = $1, sap = $2, seksi = $3  WHERE id_user = $4;',
       values: [nama, sap, seksi, id],
     };
     await pool.query(qUpAdmin);
@@ -182,7 +182,7 @@ const createAdmin = async (req, res) => {
 
     const resUser = await pool.query(qUser);
     const qStaf = {
-      text: 'INSERT INTO admin (id, nama, sap, seksi, id_user) VALUES (DEFAULT, $1, $2, $3, $4)',
+      text: 'INSERT INTO admin_staff (id, nama, sap, seksi, id_user) VALUES (DEFAULT, $1, $2, $3, $4)',
       values: [nama, sap, seksi, resUser.rows[0].id],
     };
     await pool.query(qStaf);
