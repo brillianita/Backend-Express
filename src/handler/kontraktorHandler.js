@@ -7,17 +7,17 @@ const getAllKontraktor = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, k.id_user, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id_user = u.id ORDER BY LOWER(k.nomor_kontrak) ASC';
+      qFilter = "SELECT u.username, k.id, u.id AS id_user , d.no_proyek FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE role = 'kontraktor' ORDER BY LOWER(u.username) ASC";
     } else {
-      qFilter = `SELECT k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, k.id_user, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id_user = u.id WHERE LOWER(jenis_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nama_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(nomor_kontrak) LIKE LOWER('%${search}%') OR LOWER(kont_pelaksana) LIKE LOWER('%${search}%') OR LOWER(lokasi_pekerjaan) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') ORDER BY LOWER(nomor_kontrak) ASC`;
+      qFilter = `SELECT u.username, k.id, u.id AS id_user, d.no_proyek FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE LOWER(u.username) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') AND role = 'kontraktor' ORDER BY LOWER(u.username) ASC`;
     }
     let result = await pool.query(qFilter);
 
     if (pageSize && currentPage) {
-      const totalRows = await pool.query(`SELECT COUNT (id_user) FROM (${qFilter})sub`);
+      const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
       const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
       const offset = (currentPage - 1) * pageSize;
-      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(nomor_kontrak) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(username) ASC LIMIT ${pageSize} OFFSET ${offset};`);
       return res.status(200).send({
         status: 'success',
         data: result.rows,
@@ -29,7 +29,7 @@ const getAllKontraktor = async (req, res) => {
         },
       });
     }
-    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(nomor_kontrak) ASC;`);
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(username) ASC;`);
 
     return res.status(200).send({
       status: 'success',
@@ -48,7 +48,7 @@ const getKontraktorById = async (req, res) => {
   try {
     const { id } = req.params;
     const query = {
-      text: 'SELECT k.jenis_pekerjaan, k.nama_pekerjaan, k.nomor_kontrak, k.lokasi_pekerjaan, k.kont_pelaksana, k.id_user, u.username FROM kontraktor AS k INNER JOIN users AS u ON k.id_user = u.id WHERE id_user=$1',
+      text: "SELECT u.username, k.id, u.id AS id_user, d.no_proyek FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE role = 'kontraktor' AND id_user = $1",
       values: [id],
     };
     const result = await pool.query(query);
@@ -73,7 +73,7 @@ const getKontraktorById = async (req, res) => {
     // }
     return res.status(500).send({
       status: 'error',
-      message: 'Sorry there was a failure on our server.',
+      message: e.message,
     });
   }
 };
@@ -81,11 +81,7 @@ const getKontraktorById = async (req, res) => {
 // Create user
 const createKontraktor = async (req, res) => {
   const {
-    jenisPekerjaan,
-    namaPekerjaan,
-    nomorKontrak,
-    kontPelaksana,
-    lokasiPekerjaan,
+    noProyek,
     username,
     password,
     confirmPassword,
@@ -100,23 +96,37 @@ const createKontraktor = async (req, res) => {
   }
 
   try {
-    const qUser = {
-      text: 'INSERT INTO users (id, username, password, role) VALUES (DEFAULT, $1, $2, $3) RETURNING *;',
+    const qAddUser = {
+      text: 'INSERT INTO users (id, username, password, role) VALUES (DEFAULT, $1, $2, $3) RETURNING id;',
       values: [username, hashPassword, 'kontraktor'],
     };
-    const resUser = await pool.query(qUser);
-    const qKontraktor = {
-      text: 'INSERT INTO kontraktor (id, jenis_pekerjaan, nama_pekerjaan, nomor_kontrak, kont_pelaksana, lokasi_pekerjaan, id_user) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6)',
-      values: [
-        jenisPekerjaan,
-        namaPekerjaan,
-        nomorKontrak,
-        kontPelaksana,
-        lokasiPekerjaan,
-        resUser.rows[0].id,
-      ],
+    const resUser = await pool.query(qAddUser);
+
+    let noProyekStr = '';
+    for (let i = 0; i < noProyek.length; i += 1) {
+      if (i === noProyek.length - 1) {
+        noProyekStr += `'${(noProyek[i])}'`;
+      } else {
+        noProyekStr += `'${(noProyek[i])}',`;
+      }
+    }
+    const qGetData = {
+      text: `SELECT id_datum, no_proyek FROM data WHERE no_proyek in (${noProyekStr})`,
+      // values: [noProyekStr],
     };
-    await pool.query(qKontraktor);
+    const resData = await pool.query(qGetData);
+
+    let qNoKontrak;
+    for (let i = 0; i < resData.rows.length; i += 1) {
+      qNoKontrak = {
+        text: 'INSERT INTO kontraktor_conn (id, id_datum, id_user) VALUES (DEFAULT, $1, $2)',
+        values: [
+          resData.rows[i].id_datum,
+          resUser.rows[0].id,
+        ],
+      };
+      pool.query(qNoKontrak);
+    }
 
     // await pool.query(qUser);
     return res.status(201).send({
@@ -134,23 +144,20 @@ const createKontraktor = async (req, res) => {
 const updateKontraktor = async (req, res) => {
   const { id } = req.params;
   const {
+    noProyek,
     username,
-    jenisPekerjaan,
-    kontPelaksana,
-    namaPekerjaan,
-    lokasiPekerjaan,
     oldPass,
     newPass,
     confirmNewPass,
   } = req.body;
 
   try {
-    const query = {
+    const qGetUser = {
       text: 'SELECT id, password, role FROM users WHERE id=$1',
       values: [id],
     };
-    const result = await pool.query(query);
-    if (result.rows[0].role !== 'kontraktor') {
+    const resGetUser = await pool.query(qGetUser);
+    if (resGetUser.rows[0].role !== 'kontraktor') {
       return res.status(401).send({
         status: 'fail',
         message: 'invalid request',
@@ -161,16 +168,42 @@ const updateKontraktor = async (req, res) => {
       values: [username, id],
     };
     await pool.query(qUpUsername);
-    const qUpStaff = {
-      text: 'UPDATE kontraktor SET jenis_pekerjaan = $1, kont_pelaksana = $2, nama_pekerjaan = $3, lokasi_pekerjaan = $4  WHERE id_user = $5;',
-      values: [jenisPekerjaan, kontPelaksana, namaPekerjaan, lokasiPekerjaan, id],
+
+    let noProyekStr = '';
+    for (let i = 0; i < noProyek.length; i += 1) {
+      if (i === noProyek.length - 1) {
+        noProyekStr += `'${(noProyek[i])}'`;
+      } else {
+        noProyekStr += `'${(noProyek[i])}',`;
+      }
+    }
+    const qGetData = {
+      text: `SELECT id_datum, no_proyek FROM data WHERE no_proyek in (${noProyekStr})`,
+      // values: [noProyekStr],
     };
-    await pool.query(qUpStaff);
+    const resData = await pool.query(qGetData);
+
+    const qDelKontrak = {
+      text: 'DELETE FROM kontraktor_conn WHERE id_user = $1',
+      values: [id],
+    };
+    await pool.query(qDelKontrak);
+    let qNoKontrak;
+    for (let i = 0; i < resData.rows.length; i += 1) {
+      qNoKontrak = {
+        text: 'INSERT INTO kontraktor_conn (id, id_datum, id_user) VALUES (DEFAULT, $1, $2)',
+        values: [
+          resData.rows[i].id_datum,
+          id,
+        ],
+      };
+      pool.query(qNoKontrak);
+    }
 
     if (oldPass && newPass && confirmNewPass) {
       const passwordIsValid = bcrypt.compareSync(
         oldPass,
-        result.rows[0].password,
+        resGetUser.rows[0].password,
       );
       // If the password is not valid, send the error message
       if (!passwordIsValid) {
@@ -209,7 +242,7 @@ const deleteKontraktor = async (req, res) => {
   const { id } = req.params;
   try {
     const queryKontraktor = {
-      text: 'SELECT * FROM kontraktor WHERE id_user = $1',
+      text: 'SELECT * FROM kontraktor_conn WHERE id_user = $1',
       values: [id],
     };
     const resKontraktor = await pool.query(queryKontraktor);
