@@ -13,10 +13,6 @@ exports.up = ((pgm) => {
       type: 'INTEGER',
       notNull: false,
     },
-    nama_vendor: {
-      type: 'VARCHAR',
-      notNull: true,
-    },
     file: {
       type: 'VARCHAR',
       notNull: true,
@@ -36,11 +32,20 @@ exports.up = ((pgm) => {
       type: 'INTEGER',
       notNull: true,
     },
+    id_user: {
+      type: 'INTEGER',
+      notNull: true,
+    },
   });
   pgm.addConstraint(
     'laporan',
     'fk_laporan.id_datum_data.id_datum',
     'FOREIGN KEY(id_datum) REFERENCES data(id_datum) ON DELETE CASCADE',
+  );
+  pgm.addConstraint(
+    'laporan',
+    'fk_laporan.id_user_users.id',
+    'FOREIGN KEY(id_user) REFERENCES users(id) ON DELETE CASCADE',
   );
 });
 exports.down = (pgm) => {
