@@ -1,5 +1,5 @@
 exports.up = ((pgm) => {
-  pgm.createTable('staff', {
+  pgm.createTable('admin_staff', {
     id: {
       type: 'SERIAL',
       notNull: true,
@@ -23,11 +23,11 @@ exports.up = ((pgm) => {
     },
   });
   pgm.addConstraint(
-    'staff',
-    'fk_staff.id_user_users.id',
+    'admin_staff',
+    'fk_admin_staff.id_user_users.id',
     'FOREIGN KEY(id_user) REFERENCES users(id) ON DELETE CASCADE',
   );
 });
 exports.down = (pgm) => {
-  pgm.dropTable('staff');
+  pgm.dropTable('admin_staff');
 };
