@@ -104,12 +104,10 @@
     {
         "status": "success",
         "data": [{
-            "id": 6,
-            "jenis_pekerjaan": "electrical",
-            "nama_pekerjaan": "tetsts",
-            "nomor_kontrak": "9845985",
-            "kont_pelaksana": "hhjdd",
-            "lokasi_pekerjaan": "makassar"
+            "username": "silaKontraktor",
+            "id": 17,
+            "id_user": 10,
+            "no_proyek": "8400001385"
         },...
         ]
     }
@@ -125,12 +123,10 @@
           "status": "success",
           "data": [
               {
-                "id": 6,
-                "jenis_pekerjaan": "electrical",
-                "nama_pekerjaan": "tetsts",
-                "nomor_kontrak": "9845985",
-                "kont_pelaksana": "hhjdd",
-                "lokasi_pekerjaan": "makassar"
+                "username": "silaKontraktor",
+                "id": 17,
+                "id_user": 10,
+                "no_proyek": "8400001385"
               },...
           ],
               "page": {
@@ -147,7 +143,7 @@
 
 - Get kontraktor By Id kontraktor
   - method: `GET`
-  - endpoint: `/kontraktor/:id`,
+  - endpoint: `/kontraktor/:id_user`,
   - authorization: 
     - type: `Bearer Token`,
     - token: `accessToken`
@@ -157,12 +153,10 @@
       "status": "success",
       "data`": [
           {
-            "id": 6,
-            "jenis_pekerjaan": "electrical",
-            "nama_pekerjaan": "tetsts",
-            "nomor_kontrak": "9845985",
-            "kont_pelaksana": "hhjdd",
-            "lokasi_pekerjaan": "makassar"
+            "username": "silaKontraktor",
+            "id": 17,
+            "id_user": 10,
+            "no_proyek": "8400001385"
           }
       ]
   }
@@ -176,11 +170,7 @@
   - body request:
   ```json
     {
-        "jenisPekerjaan": string | required,
-        "namaPekerjaan": string | required,
-        "nomorKontrak": string | required,
-        "lokasiPekerjaan": string | required,
-        "kontPelaksana": string | required, 
+        "noProyek": array | required,
         "username": string | required,
         "password": string | required,
         "confirmPassword": string | required
@@ -195,17 +185,14 @@
   ````  
 - Update Kontraktor Paswword
   - method: `PUT`
-  - endpoint: `/kontraktor/:id`,
+  - endpoint: `/kontraktor/:id_user`,
   - Authorization:
     - type: `Bearer Token`,
     - token: `accessToken`
   - body request:
   ```json
     { 
-      "jenisPekerjaan": string | required,
-      "kontPelaksana": string | required,
-      "namaPekerjaan": string | required,
-      "lokasiPekerjaan": string | required,
+      "noProyek": array | required,
       "username": string | required,
       "oldPass": string,
       "newPass": string,
@@ -221,7 +208,7 @@
   ````  
 - Delete Kontraktor By Id
   - method: `DELETE`
-  - endpoint: `/kontraktor/:id`,
+  - endpoint: `/kontraktor/:id_user`,
   - Authorization:
     - type: `Bearer Token`,
     - token: `accessToken`
