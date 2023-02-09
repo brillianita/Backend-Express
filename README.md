@@ -469,7 +469,7 @@
   }
   ````
 
-### Accessing Laporan (For Kontraktor)
+### Accessing Proyek (For Kontraktor)
 - Get proyek by id_user
   - method: `GET`
   - endpoint: `/proyek/:idUser`
@@ -519,6 +519,8 @@
   - endpoint: `/proyek/:idUser?search=brillianita`  
   will filter the proyek and only show the proyek within `search` Brillianita 
 
+
+### Accessing Laporan (For Kontraktor)
 - Get laporan by noProyek
   - method: `GET`
   - endpoint: `/laporan/:noProyek`
@@ -531,10 +533,14 @@
     "status": "success",
     "data": [
       {
-        "id": 19,
-        "no_proyek": "8400001385",
-        "nm_proyek": "Pekerjaan Perbaikan dan Penggantian Rubber Fender Dermaga 1 Biringkassi ",
-        "nm_rekanan": "PT. TRINUSA BIMA SAKTI"
+        "id": 3,
+        "jenis_laporan": "Laporan mingguan",
+        "urutan_lap": 1,
+        "catatan": "Perlu penambahan id",
+        "status": "Ditinjau",
+        "nm_rekanan": "PT. MOGA PINTIRO LESTARI",
+        "no_proyek": "8400001573",
+        "nm_proyek": "Pekerjaan Rekondisi Jembatan Timbang 2/3"
       },...
     ]
   }
@@ -550,15 +556,14 @@
           "status": "success",
           "data": [
             {
-              "id": 2,
+              "id": 3,
               "jenis_laporan": "Laporan mingguan",
               "urutan_lap": 1,
-              "nama_vendor": "hdhdh",
-              "catatan": "Revisi",
+              "catatan": "Perlu penambahan id",
               "status": "Ditinjau",
-              "id_datum": 69,
-              "no_proyek": "8400001417",
-              "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+              "nm_rekanan": "PT. MOGA PINTIRO LESTARI",
+              "no_proyek": "8400001573",
+              "nm_proyek": "Pekerjaan Rekondisi Jembatan Timbang 2/3"
             },..
           ],
               "page": {
@@ -585,15 +590,14 @@
         "status": "success",
         "data": [
           {
-            "id": 2,
+            "id": 3,
             "jenis_laporan": "Laporan mingguan",
             "urutan_lap": 1,
-            "nama_vendor": "hdhdh",
-            "catatan": "Revisi",
+            "catatan": "Perlu penambahan id",
             "status": "Ditinjau",
-            "id_datum": 69,
-            "no_proyek": "8400001417",
-            "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+            "nm_rekanan": "PT. MOGA PINTIRO LESTARI",
+            "no_proyek": "8400001573",
+            "nm_proyek": "Pekerjaan Rekondisi Jembatan Timbang 2/3"
           },
         ]
     }
@@ -636,8 +640,6 @@
       "file": FILE | required,
       "jenisLaporan" : string | required,
       "urutanLap" : integer | required for laporan harian, bulanan, mingguan, 
-      "noProyek": string | required,
-      "namaVendor": string |required,
     }
   ```
   - body response: 
@@ -648,7 +650,7 @@
   }
   ```` 
 
-### Accessing Laporan (For Admin or Staff)
+### Accessing Proyek (For Admin or Staff)
 - Get All Proyek
   - method: `GET`
   - endpoint: `/allProyek/`
@@ -661,12 +663,10 @@
     "status": "success",
     "data": [
       {
-        "id": 3,
-        "nama_vendor": "hdhdh",
-        "id_datum": 69,
-        "no_proyek": "8400001417",
-        "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
-        "no_kontrak": "0987654321"
+        "id": 17,
+        "no_proyek": "8400001385",
+        "nm_proyek": "Pekerjaan Perbaikan dan Penggantian Rubber Fender Dermaga 1 Biringkassi ",
+        "nm_rekanan": "PT. TRINUSA BIMA SAKTI"
       },...
     ]
   }
@@ -682,12 +682,10 @@
           "status": "success",
           "data": [
             {
-              "id": 3,
-              "nama_vendor": "hdhdh",
-              "id_datum": 69,
-              "no_proyek": "8400001417",
-              "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
-              "no_kontrak": "0987654321"
+              "id": 17,
+              "no_proyek": "8400001385",
+              "nm_proyek": "Pekerjaan Perbaikan dan Penggantian Rubber Fender Dermaga 1 Biringkassi ",
+              "nm_rekanan": "PT. TRINUSA BIMA SAKTI"
             },..
           ],
               "page": {
@@ -702,33 +700,7 @@
   - endpoint: `/allProyek?search=brillianita`  
   will filter the proyek and only show the proyek within `search` Brillianita 
 
-- Get laporan By Id laporan
-  - method: `GET`
-  - endpoint: `/detailLaporan/:id`,
-  - authorization: 
-    - type: `Bearer Token`,
-    - token: `accessToken`
-  - body response: 
-  ```json
-    {
-        "status": "success",
-        "data": [
-          {
-            "id": 2,
-            "jenis_laporan": "Laporan mingguan",
-            "urutan_lap": 1,
-            "nama_vendor": "hdhdh",
-            "catatan": "Revisi",
-            "status": "Ditinjau",
-            "id_datum": 69,
-            "file": "1675664049731-test-form bakp.pdf",
-            "created_at": "2023/02/05",
-            "no_proyek": "8400001417",
-            "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
-          },
-        ]
-    }
-  ```
+### Accessing Laporan (For Admin or Staff)
 - Get Recap
   - method: `GET`
   - endpoint: `/allLaporan/:noProyek`
@@ -741,17 +713,15 @@
     "status": "success",
     "data": [
       {
-        "id": 2,
+        "id": 3,
         "jenis_laporan": "Laporan mingguan",
         "urutan_lap": 1,
-        "nama_vendor": "hdhdh",
-        "catatan": "Revisi",
+        "catatan": "Perlu penambahan id",
         "status": "Ditinjau",
-        "id_datum": 69,
-        "file": "BASEURL/1675664049731-test-form bakp.pdf",
-        "created_at": "2023/02/05",
-        "no_proyek": "8400001417",
-        "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+        "file": "BASEURL/file/1675912354657-test-contoh.pdf",
+        "created_at": "2023/02/08",
+        "nm_proyek": "Pekerjaan Rekondisi Jembatan Timbang 2/3",
+        "no_proyek": "8400001573"
       },...
     ]
   }
@@ -767,17 +737,15 @@
           "status": "success",
           "data": [
             {
-              "id": 2,
+              "id": 3,
               "jenis_laporan": "Laporan mingguan",
               "urutan_lap": 1,
-              "nama_vendor": "hdhdh",
-              "catatan": "Revisi",
+              "catatan": "Perlu penambahan id",
               "status": "Ditinjau",
-              "id_datum": 69,
-              "file": "BASEURL/1675664049731-test-form bakp.pdf",
-              "created_at": "2023/02/05",
-              "no_proyek": "8400001417",
-              "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+              "file": "BASEURL/file/1675912354657-test-contoh.pdf",
+              "created_at": "2023/02/08",
+              "nm_proyek": "Pekerjaan Rekondisi Jembatan Timbang 2/3",
+              "no_proyek": "8400001573"
             },..
           ],
               "page": {
@@ -804,17 +772,39 @@
         "status": "success",
         "data": [
           {
-            "id": 2,
+            "id": 3,
             "jenis_laporan": "Laporan mingguan",
             "urutan_lap": 1,
-            "nama_vendor": "hdhdh",
-            "catatan": "Revisi",
+            "catatan": "Perlu penambahan id",
             "status": "Ditinjau",
-            "id_datum": 69,
-            "file": "1675664049731-test-form bakp.pdf",
-            "created_at": "2023/02/05",
-            "no_proyek": "8400001417",
-            "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+            "file": "BASEURL/file/1675912354657-test-contoh.pdf",
+            "created_at": "2023/02/08",
+            "nm_proyek": "Pekerjaan Rekondisi Jembatan Timbang 2/3",
+            "no_proyek": "8400001573"
+          },
+        ]
+    }
+  ```
+- Get laporan By Id laporan
+  - method: `GET`
+  - endpoint: `/detailLaporan/:id`,
+  - authorization: 
+    - type: `Bearer Token`,
+    - token: `accessToken`
+  - body response: 
+  ```json
+    {
+        "status": "success",
+        "data": [
+          {
+            "id": 3,
+            "jenis_laporan": "Laporan mingguan",
+            "urutan_lap": 1,
+            "nm_rekanan": "PT. MOGA PINTIRO LESTARI",
+            "catatan": "Perlu penambahan id",
+            "status": "Ditinjau",
+            "no_proyek": "8400001573",
+            "nm_proyek": "Pekerjaan Rekondisi Jembatan Timbang 2/3"
           },
         ]
     }
