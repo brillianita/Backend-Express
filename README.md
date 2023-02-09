@@ -470,9 +470,9 @@
   ````
 
 ### Accessing Laporan (For Kontraktor)
-- Get proyek by nomorKontrak
+- Get proyek by id_user
   - method: `GET`
-  - endpoint: `/proyek/:nomorKontrak`
+  - endpoint: `/proyek/:idUser`
   - authorization: 
     - type: `Bearer Token`,
     - token: `accessToken`
@@ -482,18 +482,16 @@
     "status": "success",
     "data": [
       {
-        "id": 2,
-        "nama_vendor": "hdhdh",
-        "id_datum": 69,
-        "no_proyek": "8400001417",
-        "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
-        "no_kontrak": "0987654321"
+        "id": 19,
+        "no_proyek": "8400001385",
+        "nm_proyek": "Pekerjaan Perbaikan dan Penggantian Rubber Fender Dermaga 1 Biringkassi ",
+        "nm_rekanan": "PT. TRINUSA BIMA SAKTI"
       },...
     ]
   }
   ```
   ---- **_Pagination_** ----     
-     - endpoint: `/proyek/:nomorKontrak?pageSize=10&currentPage=1`  
+     - endpoint: `/proyek/:idUser?pageSize=10&currentPage=1`  
       will show 10 first laporan.  
       `pageSize` stand for how many laporan that can be shown in one page.  
       `currentPage` stand for laporan current page. 
@@ -503,12 +501,10 @@
           "status": "success",
           "data": [
             {
-              "id": 2,
-              "nama_vendor": "hdhdh",
-              "id_datum": 69,
-              "no_proyek": "8400001417",
-              "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
-              "no_kontrak": "0987654321"
+              "id": 19,
+              "no_proyek": "8400001385",
+              "nm_proyek": "Pekerjaan Perbaikan dan Penggantian Rubber Fender Dermaga 1 Biringkassi ",
+              "nm_rekanan": "PT. TRINUSA BIMA SAKTI"
             },..
           ],
               "page": {
@@ -520,7 +516,7 @@
       }
     ```
   ---- **_Search_** ----    
-  - endpoint: `/proyek/:nomorKontrak?search=brillianita`  
+  - endpoint: `/proyek/:idUser?search=brillianita`  
   will filter the proyek and only show the proyek within `search` Brillianita 
 
 - Get laporan by noProyek
@@ -535,15 +531,10 @@
     "status": "success",
     "data": [
       {
-        "id": 2,
-        "jenis_laporan": "Laporan mingguan",
-        "urutan_lap": 1,
-        "nama_vendor": "hdhdh",
-        "catatan": "Revisi",
-        "status": "Ditinjau",
-        "id_datum": 69,
-        "no_proyek": "8400001417",
-        "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola"
+        "id": 19,
+        "no_proyek": "8400001385",
+        "nm_proyek": "Pekerjaan Perbaikan dan Penggantian Rubber Fender Dermaga 1 Biringkassi ",
+        "nm_rekanan": "PT. TRINUSA BIMA SAKTI"
       },...
     ]
   }
@@ -621,7 +612,8 @@
       "jenisLaporan" : string | required,
       "urutanLap" : integer | required for laporan harian, bulanan, mingguan, 
       "noProyek": string | required,
-      "namaVendor": string |required,
+      "id_user": integer | required
+
     }
   ```
   - body response: 
@@ -865,7 +857,7 @@
 ### Accessing dropdown nomor & nama proyek
 - Get Recap
   - method: `GET`
-  - endpoint: `/noNmProyek`
+  - endpoint: `/search?find=84`
   - authorization: 
     - type: `Bearer Token`,
     - token: `accessToken`
@@ -873,38 +865,15 @@
   ```json
   {
     "status": "success",
-    "data": []
-  }
-  ```
-  ---- **_noKontrak_** ----    
-  - endpoint: `/noNmProyek?noKontrak=12845985`  
-  will filter the laporan and only show the laporan within `noKontrak` 12845985 
-  - body response: 
-  ```json
-  {
-    "status": "success",
-    "data": [
-      {
-        "no_proyek": "8600013766",
-        "no_kontrak": "12845985"
-      },...
-    ]
-  }
-  ```
-  ---- **_noProyek_** ----    
-  - endpoint: `/noNmProyek?noKontrak=12845985&noProyek=8600013766`  
-  will filter the laporan and only show the laporan within `noKontrak` 12845985 and `noProyek` 8600013766 
-  - body response: 
-  ```json
-  {
-    "status": "success",
-    "data": [
-      {
-        "no_proyek": "8600013766",
-        "nm_proyek": "Jasa Perbaikan IPAL seksi Rumah Tangga",
-        "no_kontrak": "12845985"
-      },...
-    ]
+    "data": {
+      "search": [
+        {
+          "id_datum": 69,
+          "nm_proyek": "Pekerjaan Tambahan Perintisan Jalan Tanah Liat Paccola",
+          "no_proyek": "8400001417"
+        },...
+      ]
+    }
   }
   ```        
   

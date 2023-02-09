@@ -61,7 +61,7 @@ const searchProyek = async (req, res) => {
     }
 
     const queryGet = {
-      text: 'SELECT id_datum, nm_proyek, no_proyek FROM data WHERE LOWER(no_proyek) LIKE LOWER($1) OR LOWER(nm_proyek) LIKE LOWER($1)',
+      text: 'SELECT id_datum, nm_proyek, no_proyek, nm_rekanan, nm_jenis, nm_proyek, nm_lokasi FROM data WHERE LOWER(no_proyek) LIKE LOWER($1) OR LOWER(nm_proyek) LIKE LOWER($1)',
       values: [findLike],
     };
 
@@ -89,7 +89,7 @@ const searchProyek = async (req, res) => {
     }
     return res.status(500).send({
       status: 'error',
-      message: 'Gagal menghapus data',
+      message: e.message,
     });
   }
 };
