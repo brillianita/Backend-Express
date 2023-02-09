@@ -3,6 +3,33 @@ const ClientError = require('../exceptions/clientError');
 const InvariantError = require('../exceptions/invariantError');
 const NotFoundError = require('../exceptions/notFoundError');
 
+const resBeautifier = (data) => {
+  const dataobj = data;
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  };
+
+  dataobj.nilai_str = (Number(dataobj.nilai_project)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+
+  dataobj.status_pko = dataobj.status;
+  delete dataobj.status;
+
+  if (dataobj.tgl_mulai) {
+    dataobj.tgl_mulai = (dataobj.tgl_mulai).toLocaleString('id-ID', options);
+  }
+  if (dataobj.target_selesai) {
+    dataobj.target_selesai = (dataobj.target_selesai).toLocaleString('id-ID', options);
+  }
+
+  Object.keys(dataobj).forEach((key) => {
+    if (dataobj[key] == null) { dataobj[key] = ''; }
+  });
+
+  return dataobj;
+};
+
 const getPko = async (req, res) => {
   const queryGet = {
     text: 'SELECT * FROM pko ORDER BY id_pko',
@@ -10,10 +37,7 @@ const getPko = async (req, res) => {
   const data = await pool.query(queryGet);
 
   for (let i = 0; i < (data.rows).length; i += 1) {
-    data.rows[i].nilai_project = (Number(data.rows[i].nilai_project)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
-
-    data.rows[i].status_pko = data.rows[i].status;
-    delete data.rows[i].status;
+    data.rows[i] = resBeautifier(data.rows[i]);
   }
   return res.status(200).send({
     status: 'success',
@@ -40,6 +64,7 @@ const addPko = async (req, res) => {
 
     try {
       poolRes = await pool.query(queryInsert);
+      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }
@@ -82,10 +107,8 @@ const getDetailPko = async (req, res) => {
     if (!(poolRes.rows[0])) {
       throw new NotFoundError(`Data PKO dengan id: ${idPko} tidak ditemukan`);
     }
-    poolRes.rows[0].nilai_project = (Number(poolRes.rows[0].nilai_project)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
 
-    poolRes.rows[0].status_pko = poolRes.rows[0].status;
-    delete poolRes.rows[0].status;
+    poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
 
     return res.status(200).send({
       status: 'success',
@@ -132,6 +155,7 @@ const editPko = async (req, res) => {
 
     try {
       poolRes = await pool.query(queryInsert);
+      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }

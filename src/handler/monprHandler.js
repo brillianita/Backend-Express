@@ -3,6 +3,27 @@ const ClientError = require('../exceptions/clientError');
 const InvariantError = require('../exceptions/invariantError');
 const NotFoundError = require('../exceptions/notFoundError');
 
+const resBeautifier = (data) => {
+  const dataobj = data;
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  };
+
+  dataobj.pr_valprice_str = (Number(dataobj.pr_valprice)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+
+  if (dataobj.pr_date) {
+    dataobj.pr_date = (dataobj.pr_date).toLocaleString('id-ID', options);
+  }
+
+  Object.keys(dataobj).forEach((key) => {
+    if (dataobj[key] == null) { dataobj[key] = ''; }
+  });
+
+  return dataobj;
+};
+
 const addMonitoringPR = async (req, res) => {
   try {
     const {
@@ -35,6 +56,7 @@ const addMonitoringPR = async (req, res) => {
 
     try {
       poolRes = await pool.query(queryInsert);
+      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }
@@ -67,7 +89,7 @@ const getMonitoringPR = async (req, res) => {
   const data = await pool.query(queryGet);
 
   for (let i = 0; i < (data.rows).length; i += 1) {
-    data.rows[i].pr_valprice = (Number(data.rows[i].pr_valprice)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    data.rows[i] = resBeautifier(data.rows[i]);
   }
   return res.status(200).send({
     status: 'success',
@@ -92,7 +114,7 @@ const getDetailMonPr = async (req, res) => {
     if (!(poolRes.rows[0])) {
       throw new NotFoundError(`Data dengan id: ${idMonitor} tidak ditemukan`);
     }
-    poolRes.rows[0].pr_valprice = (Number(poolRes.rows[0].pr_valprice)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+    poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
 
     return res.status(200).send({
       status: 'success',
@@ -158,6 +180,7 @@ const editMonPr = async (req, res) => {
     if (!poolRes.rows[0]) {
       throw new NotFoundError(`Tidak dapat menemukan data Monitoring PR ${idMonitor}`);
     }
+    poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
 
     return res.status(201).send({
       status: 'success',
