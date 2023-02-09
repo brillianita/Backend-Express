@@ -20,7 +20,7 @@ const createLaporan = async (req, res) => {
     const resQId = await pool.query(qIdData);
     const createdAt = new Date().toJSON().slice(0, 10).replace(/-/g, '/');
     const query = {
-      text: `INSERT INTO laporan (id, jenis_laporan, urutan_lap, file, created_at, catatan, status, id_datum, id_user) VALUES (DEFAULT, '${jenisLaporan}', '${urutanLap}', '${namaFile}', '${createdAt}', 'Revisi', 'Ditinjau', '${resQId.rows[0].id_datum}', '${idUser}') RETURNING *;`,
+      text: `INSERT INTO laporan (id, jenis_laporan, urutan_lap, file, created_at, catatan, status, id_datum, id_user) VALUES (DEFAULT, '${jenisLaporan}', '${urutanLap}', '${namaFile}', '${createdAt}', null, 'Ditinjau', '${resQId.rows[0].id_datum}', '${idUser}') RETURNING *;`,
     };
     await pool.query(query);
     return res.status(201).send({
@@ -99,15 +99,15 @@ const getProyekByIdKontraktor = async (req, res) => {
   //   });
   // }
 };
-const getLaporan = async (req, res) => {
+const getLaporanByNoProyekKont = async (req, res) => {
   const { noProyek } = req.params;
   const { pageSize, currentPage, search } = req.query;
   try {
     let qFilter;
     if (!search) {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' ORDER BY LOWER(d.no_proyek) ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.catatan, l.status, d.nm_rekanan, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' ORDER BY LOWER(d.no_proyek) ASC`;
     } else {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' AND LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.catatan, l.status, d.nm_rekanan, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') AND d.no_proyek = '${noProyek}' ORDER BY LOWER(d.no_proyek) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -168,7 +168,7 @@ const getLaporanDetail = async (req, res) => {
   const { id } = req.params;
   try {
     const query = {
-      text: 'SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE id = $1',
+      text: 'SELECT l.id, l.jenis_laporan, l.urutan_lap, d.nm_rekanan, l.catatan, l.status, d.no_proyek, d.nm_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE id = $1',
       values: [id],
     };
     const result = await pool.query(query);
@@ -190,8 +190,6 @@ const updateLaporan = async (req, res) => {
   const {
     jenisLaporan,
     urutanLap,
-    noProyek,
-    namaVendor,
   } = req.body;
   const namaFile = req.file.filename;
   const directoryPath = path.join(__dirname, '..', '..', 'resources\\');
@@ -200,11 +198,11 @@ const updateLaporan = async (req, res) => {
       text: `SELECT file, status, id FROM laporan WHERE id = ${id}`,
     };
     const resFile = await pool.query(qFile);
-    const qIdData = {
-      text: 'SELECT id_datum, no_proyek FROM data WHERE no_proyek = $1',
-      values: [noProyek],
-    };
-    const resQId = await pool.query(qIdData);
+    // const qIdData = {
+    //   text: 'SELECT id_datum, no_proyek FROM data WHERE no_proyek = $1',
+    //   values: [noProyek],
+    // };
+    // const resQId = await pool.query(qIdData);
     if (resFile.rows[0].status !== 'Revisi') {
       return res.status(400).send({
         status: 'fail',
@@ -212,7 +210,7 @@ const updateLaporan = async (req, res) => {
       });
     }
     const query = {
-      text: `UPDATE laporan SET jenis_laporan = '${jenisLaporan}', urutan_lap = '${urutanLap}', nama_vendor = '${namaVendor}', file = '${namaFile}', id_datum = '${resQId.rows[0].id_datum}' WHERE id = ${id} RETURNING *`,
+      text: `UPDATE laporan SET jenis_laporan = '${jenisLaporan}', urutan_lap = '${urutanLap}', file = '${namaFile}', status = 'Ditinjau' WHERE id = ${id} RETURNING *`,
     };
     await pool.query(query);
     fs.unlink(directoryPath + resFile.rows[0].file, (err) => {
@@ -251,9 +249,9 @@ const getAllProyek = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = 'SELECT l.id, l.nama_vendor, l.id_datum, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum ORDER BY LOWER(d.no_kontrak) ASC';
+      qFilter = 'SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum ORDER BY LOWER(d.no_proyek) ASC';
     } else {
-      qFilter = `SELECT l.id, l.nama_vendor, l.id_datum, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE LOWER(jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_kontrak) ASC`;
+      qFilter = `SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_rekanan) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -261,7 +259,7 @@ const getAllProyek = async (req, res) => {
       const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
       const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
       const offset = (currentPage - 1) * pageSize;
-      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_kontrak) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
       return res.status(200).send({
         status: 'success',
         data: result.rows,
@@ -273,7 +271,7 @@ const getAllProyek = async (req, res) => {
         },
       });
     }
-    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_kontrak) ASC;`);
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC;`);
     return res.status(200).send({
       status: 'success',
       data: result.rows,
@@ -313,9 +311,9 @@ const getAllLaporan = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, l.file, l.created_at, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' ORDER BY LOWER(d.no_proyek) ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.catatan, l.status, l.file, l.created_at, d.nm_proyek, d.no_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' ORDER BY l.created_at ASC`;
     } else {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.nama_vendor, l.catatan, l.status, l.id_datum, l.file, l.created_at, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' AND LOWER(jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.catatan, l.status, l.file, l.created_at, d.nm_proyek, d.no_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') AND d.no_proyek = '${noProyek}' ORDER BY l.created_at ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -323,7 +321,7 @@ const getAllLaporan = async (req, res) => {
       const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
       const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
       const offset = (currentPage - 1) * pageSize;
-      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY created_at ASC LIMIT ${pageSize} OFFSET ${offset};`);
       const data = result.rows;
       const newRes = data.map((obj) => (typeof (obj.id) === 'number' ? { ...obj, file: `${baseUrl}${obj.file}`, created_at: obj.created_at.toJSON().slice(0, 10).replace(/-/g, '/') } : obj));
       return res.status(200).send({
@@ -337,7 +335,7 @@ const getAllLaporan = async (req, res) => {
         },
       });
     }
-    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC;`);
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY created_at ASC;`);
     const data = result.rows;
     const newRes = data.map((obj) => (typeof (obj.id) === 'number' ? { ...obj, file: `${baseUrl}${obj.file}`, created_at: obj.created_at.toJSON().slice(0, 10).replace(/-/g, '/') } : obj));
     return res.status(200).send({
@@ -435,7 +433,7 @@ const deleteLaporan = async (req, res) => {
 module.exports = {
   createLaporan,
   getProyekByIdKontraktor,
-  getLaporan,
+  getLaporanByNoProyekKont,
   getLaporanDetail,
   download,
   getAllProyek,

@@ -6,7 +6,7 @@ const router = Router();
 
 // KONTRAKTOR FEATURE
 router.get('/proyek/:idUser', laporanHandler.getProyekByIdKontraktor);
-router.get('/laporan/:noProyek', laporanHandler.getLaporan);
+router.get('/laporan/:noProyek', laporanHandler.getLaporanByNoProyekKont);
 router.post('/laporan/tambah', uploadFile.upload.single('file'), laporanHandler.createLaporan);
 router.get('/detailLaporan/:id', laporanHandler.getLaporanDetail);
 router.get('/file/:name', laporanHandler.download);
