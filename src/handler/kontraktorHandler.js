@@ -7,9 +7,9 @@ const getAllKontraktor = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = "SELECT u.username, k.id, u.id AS id_user , d.no_proyek FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE role = 'kontraktor' ORDER BY LOWER(u.username) ASC";
+      qFilter = "SELECT u.username, u.id AS id_user , d.no_proyek, d.nm_rekanan, d.klasifikasi, d.nm_proyek, d.nm_lokasi FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE role = 'kontraktor' ORDER BY LOWER(u.username) ASC";
     } else {
-      qFilter = `SELECT u.username, k.id, u.id AS id_user, d.no_proyek FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE LOWER(u.username) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') AND role = 'kontraktor' ORDER BY LOWER(u.username) ASC`;
+      qFilter = `SELECT u.username, u.id AS id_user , d.no_proyek, d.nm_rekanan, d.klasifikasi, d.nm_proyek, d.nm_lokasi FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE LOWER(u.username) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') AND role = 'kontraktor' ORDER BY LOWER(u.username) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -48,7 +48,7 @@ const getKontraktorById = async (req, res) => {
   try {
     const { id } = req.params;
     const query = {
-      text: "SELECT u.username, k.id, u.id AS id_user, d.no_proyek FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE role = 'kontraktor' AND id_user = $1",
+      text: "SELECT u.username, u.id AS id_user , d.no_proyek, d.nm_rekanan, d.klasifikasi, d.nm_proyek, d.nm_lokasi FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE role = 'kontraktor' AND u.id = $1",
       values: [id],
     };
     const result = await pool.query(query);
