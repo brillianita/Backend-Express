@@ -81,7 +81,7 @@ const addDatum = async (req, res) => {
   }
 };
 
-const getLatestActual = async () => {
+const findLatestActual = async () => {
   const queryGetActual = 'SELECT * FROM real order by id_real';
   const poolActual = await pool.query(queryGetActual);
 
@@ -90,7 +90,7 @@ const getLatestActual = async () => {
   for (let i = 0; i < (poolActual.rows).length; i += 1) {
     const arrActual = JSON.parse(poolActual.rows[i].arr_value);
     if (arrActual) {
-      const lastVal = arrActual[arrActual.length - 2];
+      const lastVal = arrActual[arrActual.length - 1];
 
       const queryUpdateReal = {
         text: 'UPDATE data SET real = $1 WHERE id_datum = $2',
@@ -101,32 +101,54 @@ const getLatestActual = async () => {
     }
   }
   // console.log(promises);
+
+  await Promise.all(promises);
+};
+
+const findCurrentPlan = async () => {
+  const poolResDate = await pool.query('SELECT id_datum, tgl_mulai FROM data order by id_datum');
+  const poolDate = poolResDate.rows;
+
+  const promises = [];
+
+  for (let i = 0; i < poolDate.length; i += 1) {
+    const date1 = (poolDate[i].tgl_mulai).getTime();
+    const date2 = Date.now();
+
+    let diff = (date2 - date1) / 1000;
+    diff /= (60 * 60 * 24 * 7);
+    const currentWeek = Math.abs(Math.round(diff));
+
+    // eslint-disable-next-line no-await-in-loop
+    const poolResPlan = await pool.query('SELECT * FROM plan WHERE datum_id = $1', [poolDate[i].id_datum]);
+    const plan = poolResPlan.rows[0];
+
+    if (plan && (plan.arr_value)) {
+      const arrPlan = JSON.parse(plan.arr_value);
+
+      if (arrPlan[currentWeek - 1]) {
+        const queryUpdatePlan = {
+          text: 'UPDATE data SET plan = $1 WHERE id_datum = $2',
+          values: [arrPlan[currentWeek - 1], plan.datum_id],
+        };
+
+        promises.push(pool.query(queryUpdatePlan));
+      } else {
+        const queryUpdatePlan = {
+          text: 'UPDATE data SET plan = $1 WHERE id_datum = $2',
+          values: [arrPlan[arrPlan.length - 1], plan.datum_id],
+        };
+
+        promises.push(pool.query(queryUpdatePlan));
+      }
+    }
+  }
   await Promise.all(promises);
 };
 
 const getData = async (req, res) => {
-  await getLatestActual();
-  // Pengolahan Actual
-  // const queryGetActual = 'SELECT * FROM real order by id_real';
-  // const poolActual = await pool.query(queryGetActual);
-
-  // const promises = [];
-
-  // for (let i = 0; i < (poolActual.rows).length; i += 1) {
-  //   const arrActual = JSON.parse(poolActual.rows[i].arr_value);
-  //   if (arrActual) {
-  //     const lastVal = arrActual[arrActual.length - 1];
-
-  //     const queryUpdateReal = {
-  //       text: 'UPDATE data SET real = $1 WHERE id_datum = $2',
-  //       values: [lastVal, poolActual.rows[i].datum_id],
-  //     };
-  //     promises.push(pool.query(queryUpdateReal));
-  //     // await pool.query(queryUpdateReal);
-  //   }
-  // }
-  // // console.log(promises);
-  // await Promise.all(promises);
+  await findLatestActual();
+  await findCurrentPlan();
 
   // Pemanggilan Get
   const queryGet = {
