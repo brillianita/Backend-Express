@@ -81,7 +81,54 @@ const addDatum = async (req, res) => {
   }
 };
 
+const getLatestActual = async () => {
+  const queryGetActual = 'SELECT * FROM real order by id_real';
+  const poolActual = await pool.query(queryGetActual);
+
+  const promises = [];
+
+  for (let i = 0; i < (poolActual.rows).length; i += 1) {
+    const arrActual = JSON.parse(poolActual.rows[i].arr_value);
+    if (arrActual) {
+      const lastVal = arrActual[arrActual.length - 2];
+
+      const queryUpdateReal = {
+        text: 'UPDATE data SET real = $1 WHERE id_datum = $2',
+        values: [lastVal, poolActual.rows[i].datum_id],
+      };
+      promises.push(pool.query(queryUpdateReal));
+      // await pool.query(queryUpdateReal);
+    }
+  }
+  // console.log(promises);
+  await Promise.all(promises);
+};
+
 const getData = async (req, res) => {
+  await getLatestActual();
+  // Pengolahan Actual
+  // const queryGetActual = 'SELECT * FROM real order by id_real';
+  // const poolActual = await pool.query(queryGetActual);
+
+  // const promises = [];
+
+  // for (let i = 0; i < (poolActual.rows).length; i += 1) {
+  //   const arrActual = JSON.parse(poolActual.rows[i].arr_value);
+  //   if (arrActual) {
+  //     const lastVal = arrActual[arrActual.length - 1];
+
+  //     const queryUpdateReal = {
+  //       text: 'UPDATE data SET real = $1 WHERE id_datum = $2',
+  //       values: [lastVal, poolActual.rows[i].datum_id],
+  //     };
+  //     promises.push(pool.query(queryUpdateReal));
+  //     // await pool.query(queryUpdateReal);
+  //   }
+  // }
+  // // console.log(promises);
+  // await Promise.all(promises);
+
+  // Pemanggilan Get
   const queryGet = {
     text: 'SELECT * FROM data order by id_datum',
   };
@@ -162,13 +209,14 @@ const editDatum = async (req, res) => {
     let poolRes;
     try {
       poolRes = await pool.query(queryUpdate);
-      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }
     if (!poolRes.rows[0]) {
       throw new NotFoundError(`Tidak dapat menemukan data ${idDatum}`);
     }
+    poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
+
     return res.status(201).send({
       status: 'success',
       message: 'Berhasil mengupdate data',
