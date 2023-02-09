@@ -3,6 +3,39 @@ const ClientError = require('../exceptions/clientError');
 const InvariantError = require('../exceptions/invariantError');
 const NotFoundError = require('../exceptions/notFoundError');
 
+const resBeautifier = (data) => {
+  const dataobj = data;
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  };
+
+  dataobj.nilai_str = (Number(dataobj.nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+
+  dataobj.tgl_mulai = (dataobj.tgl_mulai).toLocaleString('id-ID', options);
+  dataobj.tgl_akhir = (dataobj.tgl_akhir).toLocaleString('id-ID', options);
+
+  dataobj.status_data = dataobj.status;
+  delete dataobj.status;
+
+  if (dataobj.tgl_selesai) {
+    dataobj.tgl_selesai = (dataobj.tgl_selesai).toLocaleString('id-ID', options);
+  }
+  if (dataobj.tgl_bast1) {
+    dataobj.tgl_bast1 = (dataobj.tgl_bast1).toLocaleString('id-ID', options);
+  }
+  if (dataobj.batas_retensi) {
+    dataobj.batas_retensi = (dataobj.batas_retensi).toLocaleString('id-ID', options);
+  }
+
+  Object.keys(dataobj).forEach((key) => {
+    if (dataobj[key] == null) { dataobj[key] = ''; }
+  });
+
+  return dataobj;
+};
+
 const addDatum = async (req, res) => {
   try {
     const {
@@ -22,6 +55,7 @@ const addDatum = async (req, res) => {
 
     try {
       poolRes = await pool.query(queryInsert);
+      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }
@@ -54,33 +88,8 @@ const getData = async (req, res) => {
   const dataRes = await pool.query(queryGet);
   const data = dataRes.rows;
 
-  const options = {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  };
-
   for (let i = 0; i < (data).length; i += 1) {
-    data[i].nilai = (Number(data[i].nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
-
-    data[i].tgl_mulai = (data[i].tgl_mulai).toLocaleString('id-ID', options);
-    data[i].tgl_akhir = (data[i].tgl_akhir).toLocaleString('id-ID', options);
-    data[i].status_data = data[i].status;
-    delete data[i].status;
-
-    if (data[i].tgl_selesai) {
-      data[i].tgl_selesai = (data[i].tgl_selesai).toLocaleString('id-ID', options);
-    }
-    if (data[i].tgl_bast1) {
-      data[i].tgl_bast1 = (data[i].tgl_bast1).toLocaleString('id-ID', options);
-    }
-    if (data[i].batas_retensi) {
-      data[i].batas_retensi = (data[i].batas_retensi).toLocaleString('id-ID', options);
-    }
-
-    Object.keys(data[i]).forEach((key) => {
-      if (data[i][key] == null) { data[i][key] = ''; }
-    });
+    data[i] = resBeautifier(data[i]);
   }
 
   return res.status(200).send({
@@ -102,42 +111,17 @@ const getDatum = async (req, res) => {
       values: [idDatum],
     };
     const poolDatum = await pool.query(queryGet);
-    const datum = poolDatum.rows[0];
+    // const datum = poolDatum.rows[0];
 
-    if (!(datum)) {
+    if (!(poolDatum.rows[0])) {
       throw new NotFoundError(`Data dengan id: ${idDatum} tidak ditemukan`);
     }
 
-    datum.nilai = (Number(datum.nilai)).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
-    datum.status_data = datum.status;
-    delete datum.status;
-
-    const options = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    };
-
-    datum.tgl_mulai = (datum.tgl_mulai).toLocaleString('id-ID', options);
-    datum.tgl_akhir = (datum.tgl_akhir).toLocaleString('id-ID', options);
-
-    if (datum.tgl_selesai) {
-      datum.tgl_selesai = (datum.tgl_selesai).toLocaleString('id-ID', options);
-    }
-    if (datum.tgl_bast1) {
-      datum.tgl_bast1 = (datum.tgl_bast1).toLocaleString('id-ID', options);
-    }
-    if (datum.batas_retensi) {
-      datum.batas_retensi = (datum.batas_retensi).toLocaleString('id-ID', options);
-    }
-
-    Object.keys(datum).forEach((key) => {
-      if (datum[key] == null) { datum[key] = ''; }
-    });
+    poolDatum.rows[0] = resBeautifier(poolDatum.rows[0]);
 
     return res.status(200).send({
       status: 'success',
-      data: datum,
+      data: poolDatum.rows[0],
     });
   } catch (e) {
     console.error(e);
@@ -178,6 +162,7 @@ const editDatum = async (req, res) => {
     let poolRes;
     try {
       poolRes = await pool.query(queryUpdate);
+      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }
