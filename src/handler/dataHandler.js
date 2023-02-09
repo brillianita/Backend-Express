@@ -146,9 +146,40 @@ const findCurrentPlan = async () => {
   await Promise.all(promises);
 };
 
+const setDeviasiStatus = async () => {
+  const promises = [];
+
+  const getPlanReal = await pool.query('SELECT id_datum, plan, real FROM data ORDER BY id_datum');
+  const planReal = getPlanReal.rows;
+
+  for (let i = 0; i < planReal.length; i += 1) {
+    const deviasi = planReal[i].real - planReal[i].plan;
+    // console.log('id_datum: ', planReal[i].id_datum, ' deviasi: ', deviasi);
+    let status = '';
+
+    if (planReal[i].real === 100) {
+      status = 'COMPLETED';
+    } else if (planReal[i].real > 0 && planReal[i].real < 100) {
+      status = 'IN PROGRESS';
+    } else if (planReal[i].real === 0 || planReal[i].real === null) {
+      status = 'PREPARING';
+    } else {
+      status = 'ERROR';
+    }
+
+    const queryUpdateStatusDeviasi = {
+      text: 'UPDATE data SET deviasi = $1, status = $2 WHERE id_datum = $3',
+      values: [deviasi, status, planReal[i].id_datum],
+    };
+    promises.push(pool.query(queryUpdateStatusDeviasi));
+  }
+  await Promise.all(promises);
+};
+
 const getData = async (req, res) => {
   await findLatestActual();
   await findCurrentPlan();
+  await setDeviasiStatus();
 
   // Pemanggilan Get
   const queryGet = {
