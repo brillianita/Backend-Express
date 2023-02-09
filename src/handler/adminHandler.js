@@ -1,17 +1,19 @@
 const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
+const ClientError = require('../exceptions/clientError');
+const InvariantError = require('../exceptions/invariantError');
+const NotFoundError = require('../exceptions/notFoundError');
+const AuthenticationError = require('../exceptions/authError');
 
 const getAllAdmin = async (req, res) => {
-  const { pageSize, currentPage, search } = req.query;
-
   try {
+    const { pageSize, currentPage, search } = req.query;
     let qFilter;
     if (!search) {
-      qFilter = "SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE u.role='admin' ORDER BY LOWER (sap) ASC";
+      qFilter = "SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE u.role='admin' ORDER BY LOWER(a.sap) ASC";
     } else {
-      qFilter = `SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE LOWER(a.nama) LIKE LOWER('%${search}%') OR LOWER(a.sap) LIKE LOWER('%${search}%') OR LOWER(a.seksi) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') AND u.role='admin'  ORDER BY LOWER(a.sap) ASC`;
+      qFilter = `SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE LOWER(a.nama) LIKE LOWER($1) OR LOWER(a.sap) LIKE LOWER('%${search}%') OR LOWER(a.seksi) LIKE LOWER('%${search}%') OR LOWER(u.username) LIKE LOWER('%${search}%') AND u.role='admin'  ORDER BY LOWER(a.sap) ASC`;
     }
-
     let result = await pool.query(qFilter);
 
     if (pageSize && currentPage) {
@@ -48,34 +50,32 @@ const getAllAdmin = async (req, res) => {
 const getAdminById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!id || Number.isNaN(Number(id))) {
+      throw new InvariantError('Gagal mengambil data admin. Mohon isi id admin dengan benar');
+    }
     const query = {
       text: "SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE id_user=$1 AND u.role='admin'",
       values: [id],
     };
     const result = await pool.query(query);
 
-    // Check if data is null
-    // if (!result.rows.length) {
-    //     throw new NotFoundError(`User Not Found!`);
-    // }
-    // Check if data is null
-    // if (!result.rows.length) {
-    //     throw new NotFoundError(`User Not Found!`);
-    // }
+    if (!result.rows.length) {
+      throw new NotFoundError(`Admin dengan id ${id} tidak ditemukan`);
+    }
 
     return res.status(200).send({
       status: 'success',
-      data: result.rows,
+      data: result.rows[0],
 
     });
   } catch (e) {
-    // console.log(e);
-    // if (e instanceof ClientError) {
-    //     res.status(e.statusCode).send({
-    //         status: 'fail',
-    //         message: e.message,
-    //     })
-    // }
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
     return res.status(500).send({
       status: 'fail',
       message: 'Sorry there was a failure on our server.',
@@ -84,59 +84,50 @@ const getAdminById = async (req, res) => {
 };
 
 const updateAdmin = async (req, res) => {
-  const { id } = req.params;
-  const {
-    username,
-    nama,
-    sap,
-    seksi,
-    oldPass,
-    newPass,
-    confirmNewPass,
-  } = req.body;
-
   try {
-    const query = {
-      text: 'SELECT id, password, role FROM users WHERE id=$1',
+    const { id } = req.params;
+    const {
+      username,
+      nama,
+      sap,
+      seksi,
+      oldPass,
+      newPass,
+      confirmNewPass,
+    } = req.body;
+
+    const qGetAdminById = {
+      text: 'SELECT * FROM users WHERE id=$1',
       values: [id],
     };
-    const result = await pool.query(query);
-    if (result.rows[0].role !== 'admin') {
-      return res.status(401).send({
-        status: 'fail',
-        message: 'invalid request',
-      });
+    const resAdminById = await pool.query(qGetAdminById);
+    if (resAdminById.rows[0].role !== 'admin') {
+      throw new InvariantError('Gagal mengubah data admin. Akun ini bukan role admin');
     }
+
     const qUpUsername = {
-      text: 'UPDATE users SET username = $1  WHERE id = $2;',
+      text: 'UPDATE users SET username = $1  WHERE id = $2 RETURNING *;',
       values: [username, id],
     };
-    await pool.query(qUpUsername);
+    const resUpUsername = await pool.query(qUpUsername);
+
     const qUpAdmin = {
-      text: 'UPDATE admin_staff SET nama = $1, sap = $2, seksi = $3  WHERE id_user = $4;',
+      text: 'UPDATE admin_staff SET nama = $1, sap = $2, seksi = $3  WHERE id_user = $4 RETURNING *',
       values: [nama, sap, seksi, id],
     };
-    await pool.query(qUpAdmin);
+    const resUpAdmin = await pool.query(qUpAdmin);
 
     if (oldPass && newPass && confirmNewPass) {
       const passwordIsValid = bcrypt.compareSync(
         oldPass,
-        result.rows[0].password,
+        resAdminById.rows[0].password,
       );
-      // If the password is not valid, send the error message
       if (!passwordIsValid) {
-        return res.status(401).send({
-          status: 'fail',
-          message: 'Incorrect old password!',
-        });
-        // throw new AuthenticationError('Invalid Password!');
+        throw new AuthenticationError('Gagal mengubah password. Password lama salah');
       }
       const hashPassword = bcrypt.hashSync(newPass, 8);
       if (newPass !== confirmNewPass) {
-        return res.status(400).send({
-          status: 'fail',
-          message: 'Password and confirm password does not match',
-        });
+        throw new InvariantError('Gagal mengubah password. Password baru dan Konfirmasi Password tidak sama');
       }
       const qUpdatePass = {
         text: 'UPDATE users SET password = $1  WHERE id = $2;',
@@ -146,9 +137,20 @@ const updateAdmin = async (req, res) => {
     }
     return res.status(201).send({
       status: 'success',
-      message: 'Admin has been updated',
+      data: {
+        username: resUpUsername.rows[0].username,
+        nama: resUpAdmin.rows[0].nama,
+        sap: resUpAdmin.rows[0].sap,
+        seksi: resUpAdmin.rows[0].seksi,
+      },
     });
   } catch (e) {
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
     return res.status(500).send({
       status: 'error',
       message: e.message,
@@ -158,40 +160,59 @@ const updateAdmin = async (req, res) => {
 
 // Create user
 const createAdmin = async (req, res) => {
-  const {
-    nama,
-    sap,
-    seksi,
-    username,
-    password,
-    confirmPassword,
-  } = req.body;
-
   try {
+    const {
+      nama,
+      sap,
+      seksi,
+      username,
+      password,
+      confirmPassword,
+    } = req.body;
     const hashPassword = bcrypt.hashSync(password, 8);
     if (password !== confirmPassword) {
-      return res.status(400).send({
-        status: 'fail',
-        message: 'Password and Confirm Password does not match',
-      });
+      throw new InvariantError('Gagal membuat akun admin. Password dan konfirmasi password tidak sama');
     }
-    const qUser = {
+
+    const qGetUser = {
+      text: 'SELECT username FROM users WHERE username = $1',
+      values: [username],
+    };
+    const resGetUser = await pool.query(qGetUser);
+    console.log(resGetUser.rows.length);
+    if (resGetUser.rows.length) {
+      throw new InvariantError('Gagal membuat akun admin. Username telah digunakan');
+    }
+
+    const qAddUser = {
       text: 'INSERT INTO users (id, username, password, role) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
       values: [username, hashPassword, 'admin'],
     };
+    const resUser = await pool.query(qAddUser);
 
-    const resUser = await pool.query(qUser);
     const qStaf = {
-      text: 'INSERT INTO admin_staff (id, nama, sap, seksi, id_user) VALUES (DEFAULT, $1, $2, $3, $4)',
+      text: 'INSERT INTO admin_staff (id, nama, sap, seksi, id_user) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *',
       values: [nama, sap, seksi, resUser.rows[0].id],
     };
-    await pool.query(qStaf);
-    // await pool.query(qUser);
+    const resStaf = await pool.query(qStaf);
+
     return res.status(201).send({
       status: 'success',
-      message: 'Register Successfull!',
+      data: {
+        username: resUser.rows[0].username,
+        nama: resStaf.rows[0].nama,
+        sap: resStaf.rows[0].sap,
+        seksi: resStaf.rows[0].seksi,
+      },
     });
   } catch (e) {
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+
     return res.status(500).send({
       status: 'error',
       message: e.message,
