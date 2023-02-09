@@ -60,7 +60,7 @@ const getAdminById = async (req, res) => {
     };
     const result = await pool.query(query);
 
-    if (!result.rows[0]) {
+    if (!result.rows.length) {
       throw new NotFoundError(`Admin dengan id ${id} tidak ditemukan`);
     }
 
@@ -84,18 +84,18 @@ const getAdminById = async (req, res) => {
 };
 
 const updateAdmin = async (req, res) => {
-  const { id } = req.params;
-  const {
-    username,
-    nama,
-    sap,
-    seksi,
-    oldPass,
-    newPass,
-    confirmNewPass,
-  } = req.body;
-
   try {
+    const { id } = req.params;
+    const {
+      username,
+      nama,
+      sap,
+      seksi,
+      oldPass,
+      newPass,
+      confirmNewPass,
+    } = req.body;
+
     const qGetAdminById = {
       text: 'SELECT * FROM users WHERE id=$1',
       values: [id],
@@ -160,16 +160,15 @@ const updateAdmin = async (req, res) => {
 
 // Create user
 const createAdmin = async (req, res) => {
-  const {
-    nama,
-    sap,
-    seksi,
-    username,
-    password,
-    confirmPassword,
-  } = req.body;
-
   try {
+    const {
+      nama,
+      sap,
+      seksi,
+      username,
+      password,
+      confirmPassword,
+    } = req.body;
     const hashPassword = bcrypt.hashSync(password, 8);
     if (password !== confirmPassword) {
       throw new InvariantError('Gagal membuat akun admin. Password dan konfirmasi password tidak sama');
@@ -207,6 +206,13 @@ const createAdmin = async (req, res) => {
       },
     });
   } catch (e) {
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+
     return res.status(500).send({
       status: 'error',
       message: e.message,
