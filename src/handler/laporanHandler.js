@@ -10,7 +10,7 @@ const createLaporan = async (req, res) => {
     jenisLaporan,
     urutanLap,
     noProyek,
-    namaVendor,
+    idUser,
   } = req.body;
   try {
     const qIdData = {
@@ -20,7 +20,7 @@ const createLaporan = async (req, res) => {
     const resQId = await pool.query(qIdData);
     const createdAt = new Date().toJSON().slice(0, 10).replace(/-/g, '/');
     const query = {
-      text: `INSERT INTO laporan (id, jenis_laporan, urutan_lap, nama_vendor, file, created_at, catatan, status, id_datum) VALUES (DEFAULT, '${jenisLaporan}', '${urutanLap}', '${namaVendor}', '${namaFile}', '${createdAt}', 'Revisi', 'Ditinjau', '${resQId.rows[0].id_datum}') RETURNING *;`,
+      text: `INSERT INTO laporan (id, jenis_laporan, urutan_lap, file, created_at, catatan, status, id_datum, id_user) VALUES (DEFAULT, '${jenisLaporan}', '${urutanLap}', '${namaFile}', '${createdAt}', 'Revisi', 'Ditinjau', '${resQId.rows[0].id_datum}', '${idUser}') RETURNING *;`,
     };
     await pool.query(query);
     return res.status(201).send({
@@ -35,75 +35,15 @@ const createLaporan = async (req, res) => {
   }
 };
 
-// const getNoProyek = async (req, res) => {
-//   const { noKontrak } = req.query;
-//   try {
-//     const query = {
-//       text: 'SELECT no_proyek, no_kontrak FROM data WHERE no_kontrak = $1',
-//       values: [noKontrak],
-//     };
-//     const result = await pool.query(query);
-
-//     return res.status(200).send({
-//       status: 'success',
-//       data: result.rows,
-//     });
-//   } catch (e) {
-//     return res.status(500).send({
-//       status: 'error',
-//       data: e.message,
-//     });
-//   }
-// };
-
-const getNoNmProyek = async (req, res) => {
-  const { noProyek, noKontrak } = req.query;
-  try {
-    let query;
-    if (noProyek) {
-      query = {
-        text: 'SELECT no_proyek, nm_proyek, no_kontrak FROM data WHERE no_kontrak = $1 AND no_proyek = $2',
-        values: [noKontrak, noProyek],
-      };
-    } else {
-      query = {
-        text: 'SELECT no_proyek, nm_proyek, no_kontrak FROM data WHERE no_kontrak = $1',
-        values: [noKontrak],
-      };
-    }
-    const result = await pool.query(query);
-
-    return res.status(200).send({
-      status: 'success',
-      data: result.rows,
-    });
-    // query = {
-    //   text: 'SELECT no_proyek, no_kontrak FROM data WHERE no_kontrak = $1',
-    //   values: [noKontrak],
-    // };
-    // const result = await pool.query(query);
-
-    // return res.status(200).send({
-    //   status: 'success',
-    //   data: result.rows,
-    // });
-  } catch (e) {
-    return res.status(500).send({
-      status: 'error',
-      data: e.message,
-    });
-  }
-};
-
-const getProyek = async (req, res) => {
-  const { nomorKontrak } = req.params;
+const getProyekByIdKontraktor = async (req, res) => {
+  const { idUser } = req.params;
   const { pageSize, currentPage, search } = req.query;
   try {
     let qFilter;
     if (!search) {
-      qFilter = `SELECT l.id, l.nama_vendor, l.id_datum, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' ORDER BY LOWER(d.no_proyek) ASC`;
+      qFilter = `SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE k.id_user = '${idUser}' ORDER BY LOWER(d.no_proyek) ASC`;
     } else {
-      qFilter = `SELECT l.id, l.nama_vendor, l.id_datum, d.no_proyek, d.nm_proyek, d.no_kontrak FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_kontrak = '${nomorKontrak}' AND LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(nama_vendor) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
+      qFilter = `SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_rekanan) LIKE LOWER('%${search}%') AND k.id_user = '${idUser}'  ORDER BY LOWER(d.no_proyek) ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -493,9 +433,8 @@ const deleteLaporan = async (req, res) => {
 };
 
 module.exports = {
-  getNoNmProyek,
   createLaporan,
-  getProyek,
+  getProyekByIdKontraktor,
   getLaporan,
   getLaporanDetail,
   download,
