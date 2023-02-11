@@ -334,7 +334,7 @@ const deleteActual = async (req, res) => {
 
 const getPlanActual = async (req, res) => {
   const queryGet = {
-    text: 'SELECT plan.datum_id, plan.arr_value AS arrplan, real.arr_value as arractual FROM plan INNER JOIN real ON plan.datum_id = real.datum_id',
+    text: 'SELECT d.nm_proyek, d.tahun, p.datum_id, p.arr_value AS arrplan, r.arr_value as arractual FROM plan AS p INNER JOIN real AS r ON p.datum_id = r.datum_id INNER JOIN data AS d ON p.datum_id = d.id_datum ORDER BY p.datum_id',
   };
   const dataRes = await pool.query(queryGet);
   const data = dataRes.rows;
