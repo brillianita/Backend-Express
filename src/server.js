@@ -11,6 +11,7 @@ const dropdownRoutes = require('./routes/dropdownRoutes');
 const dataRoutes = require('./routes/dataRoutes');
 const monPrRoutes = require('./routes/monprRoutes');
 const pkoRoutes = require('./routes/pkoRoutes');
+const planActualroutes = require('./routes/planActualRoutes');
 
 require('dotenv').config();
 
@@ -42,6 +43,7 @@ app.use(dropdownRoutes);
 app.use(dataRoutes);
 app.use(monPrRoutes);
 app.use(pkoRoutes);
+app.use(planActualroutes);
 app.use(express.urlencoded({ extended: true }));
 
 app.listen(PORT, () => console.log(`API is listening on port ${PORT}`));
