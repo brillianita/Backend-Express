@@ -40,8 +40,12 @@ const addDatum = async (req, res) => {
   try {
     const {
       nmJenis, tahun, noProyek, namaProyek, namaRekanan,
-      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, klasifikasi,
+      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, klasifikasi, arrPlan,
     } = req.body;
+
+    if (typeof (arrPlan) !== 'object') {
+      throw new InvariantError('Masukkan array arrPlan dengan benar!');
+    }
 
     const queryInsert = {
       text: 'INSERT INTO data (id_datum, nm_jenis, tahun, no_proyek, nm_proyek, nm_rekanan, tgl_mulai, tgl_akhir, nilai, nm_kota, nm_lokasi, keterangan, klasifikasi) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;',
@@ -56,6 +60,25 @@ const addDatum = async (req, res) => {
     try {
       poolRes = await pool.query(queryInsert);
       poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
+    } catch (e) {
+      throw new InvariantError(e);
+    }
+
+    const arrPlanStr = `[${arrPlan}]`;
+
+    const queryInsertPlan = {
+      text: 'INSERT INTO plan (datum_id, arr_value) VALUES ($1, $2) RETURNING *;',
+      values: [
+        poolRes.rows[0].id_datum, arrPlanStr,
+      ],
+    };
+
+    try {
+      const poolResPlan = await pool.query(queryInsertPlan);
+      poolRes.rows[0].arrplan = poolResPlan.rows[0].arr_value;
+      if (poolRes.rows[0].arrplan) {
+        poolRes.rows[0].arrplan = JSON.parse(poolRes.rows[0].arrplan);
+      }
     } catch (e) {
       throw new InvariantError(e);
     }
