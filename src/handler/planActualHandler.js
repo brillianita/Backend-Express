@@ -178,9 +178,9 @@ const addActual = async (req, res) => {
     const arrActualStr = `[${arrActual}]`;
 
     const queryInsert = {
-      text: 'INSERT INTO plan (datum_id, arr_value) VALUES ($1, $2) RETURNING *;',
+      text: 'INSERT INTO real (datum_id, arr_value) VALUES ($1, $2) RETURNING *;',
       values: [
-        idDatum, arrPlanStr,
+        idDatum, arrActualStr,
       ],
     };
 
@@ -188,7 +188,6 @@ const addActual = async (req, res) => {
 
     try {
       poolRes = await pool.query(queryInsert);
-      // poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }
@@ -215,7 +214,7 @@ const addActual = async (req, res) => {
 
 const getActual = async (req, res) => {
   const queryGet = {
-    text: 'SELECT * FROM plan order by id_plan',
+    text: 'SELECT * FROM real order by id_real',
   };
   const dataRes = await pool.query(queryGet);
   const data = dataRes.rows;
@@ -236,7 +235,7 @@ const getActualDetail = async (req, res) => {
   const { idDatum } = req.params;
 
   const queryGet = {
-    text: 'SELECT * FROM plan WHERE datum_id = $1 order by id_plan',
+    text: 'SELECT * FROM real WHERE datum_id = $1 order by id_real',
     values: [idDatum],
   };
   const dataRes = await pool.query(queryGet);
@@ -255,16 +254,16 @@ const getActualDetail = async (req, res) => {
 const editActualDetail = async (req, res) => {
   try {
     const { idDatum } = req.params;
-    const { arrPlan } = req.body;
+    const { arrActual } = req.body;
 
-    if (typeof (arrPlan) !== 'object') {
-      throw new InvariantError('Masukkan array arrPlan dengan benar!');
+    if (typeof (arrActual) !== 'object') {
+      throw new InvariantError('Masukkan array arrActual dengan benar!');
     }
-    const arrPlanStr = `[${arrPlan}]`;
+    const arrActualStr = `[${arrActual}]`;
 
     const queryUpdate = {
-      text: 'UPDATE plan SET arr_value = $1 WHERE datum_id = $2 RETURNING *;',
-      values: [arrPlanStr, idDatum],
+      text: 'UPDATE real SET arr_value = $1 WHERE datum_id = $2 RETURNING *;',
+      values: [arrActualStr, idDatum],
     };
 
     let poolRes;
@@ -277,7 +276,7 @@ const editActualDetail = async (req, res) => {
 
     return res.status(201).send({
       status: 'success',
-      message: 'Berhasil mengedit data plan',
+      message: 'Berhasil mengedit data actual',
       data: poolRes.rows[0],
     });
   } catch (e) {
@@ -300,11 +299,11 @@ const deleteActual = async (req, res) => {
     const { idDatum } = req.params;
 
     if (!idDatum || Number.isNaN(Number(idDatum))) {
-      throw new InvariantError('Gagal menghapus data plan. Mohon isi idDatum proyek dengan benar');
+      throw new InvariantError('Gagal menghapus data actual. Mohon isi idDatum proyek dengan benar');
     }
 
     const queryDel = {
-      text: 'DELETE FROM plan WHERE datum_id = $1 RETURNING *',
+      text: 'DELETE FROM real WHERE datum_id = $1 RETURNING *',
       values: [idDatum],
     };
     const poolDel = await pool.query(queryDel);
@@ -315,7 +314,7 @@ const deleteActual = async (req, res) => {
 
     return res.status(200).send({
       status: 'success',
-      message: `Data proyek ${poolDel.rows[0].datum_id} berhasil dihapus`,
+      message: `Data actual ${poolDel.rows[0].datum_id} berhasil dihapus`,
     });
   } catch (e) {
     console.error(e);
@@ -328,11 +327,43 @@ const deleteActual = async (req, res) => {
     }
     return res.status(500).send({
       status: 'error',
-      message: 'Gagal menghapus data plan',
+      message: 'Gagal menghapus data actual',
     });
   }
 };
 
+const getPlanActual = async (req, res) => {
+  const queryGet = {
+    text: 'SELECT plan.datum_id, plan.arr_value AS arrplan, real.arr_value as arractual FROM plan INNER JOIN real ON plan.datum_id = real.datum_id',
+  };
+  const dataRes = await pool.query(queryGet);
+  const data = dataRes.rows;
+
+  for (let i = 0; i < data.length; i += 1) {
+    if (data[i].arrplan) {
+      data[i].arrplan = JSON.parse(data[i].arrplan);
+    }
+    if (data[i].arractual) {
+      data[i].arractual = JSON.parse(data[i].arractual);
+    }
+  }
+
+  return res.status(200).send({
+    status: 'success',
+    data,
+  });
+};
+
 module.exports = {
-  addPlan, getPlan, getPlanDetail, deletePlan, editPlanDetail,
+  addPlan,
+  getPlan,
+  getPlanDetail,
+  deletePlan,
+  editPlanDetail,
+  addActual,
+  getActual,
+  getActualDetail,
+  editActualDetail,
+  deleteActual,
+  getPlanActual,
 };
