@@ -81,7 +81,107 @@ const addDatum = async (req, res) => {
   }
 };
 
+const findLatestActual = async () => {
+  const queryGetActual = 'SELECT * FROM real order by id_real';
+  const poolActual = await pool.query(queryGetActual);
+
+  const promises = [];
+
+  for (let i = 0; i < (poolActual.rows).length; i += 1) {
+    const arrActual = JSON.parse(poolActual.rows[i].arr_value);
+    if (arrActual) {
+      const lastVal = arrActual[arrActual.length - 1];
+
+      const queryUpdateReal = {
+        text: 'UPDATE data SET real = $1 WHERE id_datum = $2',
+        values: [lastVal, poolActual.rows[i].datum_id],
+      };
+      promises.push(pool.query(queryUpdateReal));
+      // await pool.query(queryUpdateReal);
+    }
+  }
+  // console.log(promises);
+
+  await Promise.all(promises);
+};
+
+const findCurrentPlan = async () => {
+  const poolResDate = await pool.query('SELECT id_datum, tgl_mulai FROM data order by id_datum');
+  const poolDate = poolResDate.rows;
+
+  const promises = [];
+
+  for (let i = 0; i < poolDate.length; i += 1) {
+    const date1 = (poolDate[i].tgl_mulai).getTime();
+    const date2 = Date.now();
+
+    let diff = (date2 - date1) / 1000;
+    diff /= (60 * 60 * 24 * 7);
+    const currentWeek = Math.abs(Math.round(diff));
+
+    // eslint-disable-next-line no-await-in-loop
+    const poolResPlan = await pool.query('SELECT * FROM plan WHERE datum_id = $1', [poolDate[i].id_datum]);
+    const plan = poolResPlan.rows[0];
+
+    if (plan && (plan.arr_value)) {
+      const arrPlan = JSON.parse(plan.arr_value);
+
+      if (arrPlan[currentWeek - 1]) {
+        const queryUpdatePlan = {
+          text: 'UPDATE data SET plan = $1 WHERE id_datum = $2',
+          values: [arrPlan[currentWeek - 1], plan.datum_id],
+        };
+
+        promises.push(pool.query(queryUpdatePlan));
+      } else {
+        const queryUpdatePlan = {
+          text: 'UPDATE data SET plan = $1 WHERE id_datum = $2',
+          values: [arrPlan[arrPlan.length - 1], plan.datum_id],
+        };
+
+        promises.push(pool.query(queryUpdatePlan));
+      }
+    }
+  }
+  await Promise.all(promises);
+};
+
+const setDeviasiStatus = async () => {
+  const promises = [];
+
+  const getPlanReal = await pool.query('SELECT id_datum, plan, real FROM data ORDER BY id_datum');
+  const planReal = getPlanReal.rows;
+
+  for (let i = 0; i < planReal.length; i += 1) {
+    const deviasi = planReal[i].real - planReal[i].plan;
+    // console.log('id_datum: ', planReal[i].id_datum, ' deviasi: ', deviasi);
+    let status = '';
+
+    if (planReal[i].real === 100) {
+      status = 'COMPLETED';
+    } else if (planReal[i].real > 0 && planReal[i].real < 100) {
+      status = 'IN PROGRESS';
+    } else if (planReal[i].real === 0 || planReal[i].real === null) {
+      status = 'PREPARING';
+    } else {
+      status = 'ERROR';
+    }
+
+    const queryUpdateStatusDeviasi = {
+      text: 'UPDATE data SET deviasi = $1, status = $2 WHERE id_datum = $3',
+      values: [deviasi, status, planReal[i].id_datum],
+    };
+    promises.push(pool.query(queryUpdateStatusDeviasi));
+  }
+  await Promise.all(promises);
+};
+
 const getData = async (req, res) => {
+  await findLatestActual();
+  await findCurrentPlan();
+  await setDeviasiStatus();
+
+  // Pemanggilan Get
   const queryGet = {
     text: 'SELECT * FROM data order by id_datum',
   };
@@ -162,13 +262,14 @@ const editDatum = async (req, res) => {
     let poolRes;
     try {
       poolRes = await pool.query(queryUpdate);
-      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }
     if (!poolRes.rows[0]) {
       throw new NotFoundError(`Tidak dapat menemukan data ${idDatum}`);
     }
+    poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
+
     return res.status(201).send({
       status: 'success',
       message: 'Berhasil mengupdate data',

@@ -150,18 +150,19 @@ const editPko = async (req, res) => {
         statusPko, keterangan, nilaiProject, statusPenagihan, idPko,
       ],
     };
+    console.log(req.body);
 
     let poolRes;
 
     try {
       poolRes = await pool.query(queryInsert);
-      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
     } catch (e) {
       throw new InvariantError(e);
     }
     if (!poolRes.rows[0]) {
       throw new NotFoundError(`Tidak dapat menemukan data PKO ${idPko}`);
     }
+    poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
 
     return res.status(201).send({
       status: 'success',
