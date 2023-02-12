@@ -311,9 +311,9 @@ const getAllLaporan = async (req, res) => {
   try {
     let qFilter;
     if (!search) {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.catatan, l.status, l.file, l.created_at, d.nm_proyek, d.no_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' ORDER BY l.created_at ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.catatan, l.status, l.file, l.created_at, d.nm_proyek, d.no_proyek, nm_rekanan FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE d.no_proyek = '${noProyek}' ORDER BY l.created_at ASC`;
     } else {
-      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.catatan, l.status, l.file, l.created_at, d.nm_proyek, d.no_proyek FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') AND d.no_proyek = '${noProyek}' ORDER BY l.created_at ASC`;
+      qFilter = `SELECT l.id, l.jenis_laporan, l.urutan_lap, l.catatan, l.status, l.file, l.created_at, d.nm_proyek, d.no_proyek, nm_rekanan FROM laporan AS l INNER JOIN data AS d ON l.id_datum = d.id_datum WHERE LOWER(l.jenis_laporan) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(l.catatan) LIKE LOWER('%${search}%') OR LOWER(l.status) LIKE LOWER('%${search}%') AND d.no_proyek = '${noProyek}' ORDER BY l.created_at ASC`;
     }
     let result = await pool.query(qFilter);
 
@@ -430,6 +430,41 @@ const deleteLaporan = async (req, res) => {
   }
 };
 
+const updateBastStatus = async (req, res) => {
+  const { noProyek } = req.params;
+  const { statusBast } = req.body;
+
+  try {
+    const qUpdateStatus = {
+      text: 'UPDATE data SET status_bast1 = $1 WHERE noProyek = $2 RETURNING *',
+      values: [statusBast, noProyek],
+    };
+    const result = await pool.query(qUpdateStatus);
+
+    if (statusBast === 'Approved') {
+      res.status(201).send({
+        status: 'success',
+        data: {
+          statusBast: result.rows[0].status_bast1,
+          urlFormBast: 'hddjkdkjdkj',
+        },
+      });
+    } else {
+      res.status(201).send({
+        status: 'success',
+        data: {
+          statusBast: result.rows[0].status_bast1,
+        },
+      });
+    }
+  } catch (e) {
+    res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
   createLaporan,
   getProyekByIdKontraktor,
@@ -441,4 +476,5 @@ module.exports = {
   updateLaporan,
   updateStat,
   deleteLaporan,
+  updateBastStatus,
 };
