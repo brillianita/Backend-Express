@@ -18,16 +18,16 @@ const getData = async (req, res) => {
 
 const getStatistikbyDataStatus = async (req, res) => {
   try {
-    const { tahun, nomorKontrak } = req.query;
+    const { tahun, idUser } = req.query;
 
     if (!tahun || Number.isNaN(Number(tahun))) {
       throw new InvariantError('Gagal mengambil data. Mohon isi tahun project dengan benar');
     }
     let queryGet;
-    if (nomorKontrak) {
+    if (idUser) {
       queryGet = {
-        text: "SELECT COUNT(id_datum) as totalProject, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'completed') as completed, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'preparing') as preparing, COUNT(id_datum) FILTER (WHERE LOWER(status) = 'in progress') as inPro, COUNT(id_datum) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'opex') as opexNilai, COUNT(id_datum) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capex, SUM(nilai) FILTER (WHERE LOWER(nm_jenis) = 'capex') as capexNilai FROM data WHERE tahun = $1 AND no_kontrak = $2;",
-        values: [tahun, nomorKontrak],
+        text: "SELECT COUNT(d.id_datum) as totalProject, COUNT(d.id_datum) FILTER (WHERE LOWER(d.status) = 'completed') as completed, COUNT(d.id_datum) FILTER (WHERE LOWER(d.status) = 'preparing') as preparing, COUNT(d.id_datum) FILTER (WHERE LOWER(d.status) = 'in progress') as inPro, COUNT(d.id_datum) FILTER (WHERE LOWER(d.nm_jenis) = 'opex') as opex, SUM(d.nilai) FILTER (WHERE LOWER(d.nm_jenis) = 'opex') as opex_nilai, COUNT(d.id_datum) FILTER (WHERE LOWER(d.nm_jenis) = 'capex') as capex, SUM(d.nilai) FILTER (WHERE LOWER(d.nm_jenis) = 'capex') as capex_nilai FROM data as d INNER JOIN kontraktor_conn as k ON d.id_datum = k.id_datum WHERE d.tahun = $1 AND  k.id_user= $2;",
+        values: [tahun, idUser],
       };
     } else {
       queryGet = {
