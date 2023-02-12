@@ -5,9 +5,19 @@ const NotFoundError = require('../exceptions/notFoundError');
 
 const dropdownProyek = async (req, res) => {
   try {
-    const queryGet = {
-      text: 'SELECT id_datum, nm_proyek FROM data',
-    };
+    const { idUser } = req.query;
+    let queryGet;
+
+    if (idUser) {
+      queryGet = {
+        text: 'SELECT d.id_datum, d.nm_proyek FROM data AS d INNER JOIN kontraktor_conn AS kontraktor ON d.id_datum = kontraktor.id_datum WHERE id_user = $1',
+        values: [idUser],
+      };
+    } else {
+      queryGet = {
+        text: 'SELECT id_datum, nm_proyek FROM data',
+      };
+    }
 
     const poolRes = await pool.query(queryGet);
     const data = poolRes.rows;
