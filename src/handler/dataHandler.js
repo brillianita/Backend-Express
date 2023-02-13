@@ -36,74 +36,6 @@ const resBeautifier = (data) => {
   return dataobj;
 };
 
-const addDatum = async (req, res) => {
-  try {
-    const {
-      nmJenis, tahun, noProyek, namaProyek, namaRekanan,
-      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, klasifikasi, arrPlan,
-    } = req.body;
-
-    if (typeof (arrPlan) !== 'object') {
-      throw new InvariantError('Masukkan array arrPlan dengan benar!');
-    }
-
-    const queryInsert = {
-      text: 'INSERT INTO data (id_datum, nm_jenis, tahun, no_proyek, nm_proyek, nm_rekanan, tgl_mulai, tgl_akhir, nilai, nm_kota, nm_lokasi, keterangan, klasifikasi) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;',
-      values: [
-        nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai,
-        tglAkhir, nilai, nmKota, nmLokasi, keterangan, klasifikasi,
-      ],
-    };
-
-    let poolRes;
-
-    try {
-      poolRes = await pool.query(queryInsert);
-      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
-    } catch (e) {
-      throw new InvariantError(e);
-    }
-
-    const arrPlanStr = `[${arrPlan}]`;
-
-    const queryInsertPlan = {
-      text: 'INSERT INTO plan (datum_id, arr_value) VALUES ($1, $2) RETURNING *;',
-      values: [
-        poolRes.rows[0].id_datum, arrPlanStr,
-      ],
-    };
-
-    try {
-      const poolResPlan = await pool.query(queryInsertPlan);
-      poolRes.rows[0].arrplan = poolResPlan.rows[0].arr_value;
-      if (poolRes.rows[0].arrplan) {
-        poolRes.rows[0].arrplan = JSON.parse(poolRes.rows[0].arrplan);
-      }
-    } catch (e) {
-      throw new InvariantError(e);
-    }
-
-    return res.status(201).send({
-      status: 'success',
-      message: 'Berhasil menambahkan data baru',
-      data: poolRes.rows[0],
-    });
-  } catch (e) {
-    console.error(e);
-
-    if (e instanceof ClientError) {
-      return res.status(400).send({
-        status: 'fail',
-        message: e.message,
-      });
-    }
-    return res.status(500).send({
-      status: 'error',
-      message: 'Gagal menambahkan data',
-    });
-  }
-};
-
 const findLatestActual = async () => {
   const queryGetActual = 'SELECT * FROM real order by id_real';
   const poolActual = await pool.query(queryGetActual);
@@ -199,10 +131,39 @@ const setDeviasiStatus = async () => {
   await Promise.all(promises);
 };
 
+const setProgress = async () => {
+  const promises = [];
+  const queryGetProgress = {
+    text: 'SELECT id_datum, plan, real, status FROM data WHERE LOWER(status) = $1 ORDER BY id_datum',
+    values: ['in progress'],
+  };
+  const poolProgress = await pool.query(queryGetProgress);
+  const progress = poolProgress.rows;
+  let statusProgress;
+
+  for (let i = 0; i < progress.length; i += 1) {
+    if (progress[i].plan === progress[i].real) {
+      statusProgress = 'ON TRACK';
+    } else if (progress[i].plan > progress[i].real) {
+      statusProgress = 'LATE';
+    } else if (progress[i].plan < progress[i].real) {
+      statusProgress = 'LEADING';
+    }
+
+    const queryUpdateProgress = {
+      text: 'UPDATE data SET progress = $1 WHERE id_datum = $2',
+      values: [statusProgress, progress[i].id_datum],
+    };
+    promises.push(pool.query(queryUpdateProgress));
+  }
+  await Promise.all(promises);
+};
+
 const getData = async (req, res) => {
   await findLatestActual();
   await findCurrentPlan();
   await setDeviasiStatus();
+  await setProgress();
 
   // Pemanggilan Get
   const queryGet = {
@@ -219,6 +180,74 @@ const getData = async (req, res) => {
     status: 'success',
     data,
   });
+};
+
+const addDatum = async (req, res) => {
+  try {
+    const {
+      nmJenis, tahun, noProyek, namaProyek, namaRekanan,
+      tglMulai, tglAkhir, nilai, nmKota, nmLokasi, keterangan, klasifikasi, arrPlan,
+    } = req.body;
+
+    if (typeof (arrPlan) !== 'object') {
+      throw new InvariantError('Masukkan array arrPlan dengan benar!');
+    }
+
+    const queryInsert = {
+      text: 'INSERT INTO data (id_datum, nm_jenis, tahun, no_proyek, nm_proyek, nm_rekanan, tgl_mulai, tgl_akhir, nilai, nm_kota, nm_lokasi, keterangan, klasifikasi) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;',
+      values: [
+        nmJenis, tahun, noProyek, namaProyek, namaRekanan, tglMulai,
+        tglAkhir, nilai, nmKota, nmLokasi, keterangan, klasifikasi,
+      ],
+    };
+
+    let poolRes;
+
+    try {
+      poolRes = await pool.query(queryInsert);
+      poolRes.rows[0] = resBeautifier(poolRes.rows[0]);
+    } catch (e) {
+      throw new InvariantError(e);
+    }
+
+    const arrPlanStr = `[${arrPlan}]`;
+
+    const queryInsertPlan = {
+      text: 'INSERT INTO plan (datum_id, arr_value) VALUES ($1, $2) RETURNING *;',
+      values: [
+        poolRes.rows[0].id_datum, arrPlanStr,
+      ],
+    };
+
+    try {
+      const poolResPlan = await pool.query(queryInsertPlan);
+      poolRes.rows[0].arrplan = poolResPlan.rows[0].arr_value;
+      if (poolRes.rows[0].arrplan) {
+        poolRes.rows[0].arrplan = JSON.parse(poolRes.rows[0].arrplan);
+      }
+    } catch (e) {
+      throw new InvariantError(e);
+    }
+
+    return res.status(201).send({
+      status: 'success',
+      message: 'Berhasil menambahkan data baru',
+      data: poolRes.rows[0],
+    });
+  } catch (e) {
+    console.error(e);
+
+    if (e instanceof ClientError) {
+      return res.status(400).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal menambahkan data',
+    });
+  }
 };
 
 const getDatum = async (req, res) => {
