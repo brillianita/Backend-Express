@@ -179,15 +179,27 @@ const addActual = async (req, res) => {
 
     const queryInsert = {
       text: 'INSERT INTO real (datum_id, arr_value) VALUES ($1, $2) RETURNING *;',
-      values: [
-        idDatum, arrActualStr,
-      ],
+      values: [idDatum, arrActualStr],
+    };
+    const queryUpdate = {
+      text: 'UPDATE real SET arr_value = $1 WHERE datum_id = $2 RETURNING *;',
+      values: [arrActualStr, idDatum],
     };
 
     let poolRes;
 
     try {
-      poolRes = await pool.query(queryInsert);
+      const queryGetCheck = {
+        text: 'SELECT * FROM real WHERE datum_id = $1',
+        values: [idDatum],
+      };
+      const poolGet = await pool.query(queryGetCheck);
+
+      if (!poolGet.rows[0]) {
+        poolRes = await pool.query(queryInsert);
+      } else {
+        poolRes = await pool.query(queryUpdate);
+      }
     } catch (e) {
       throw new InvariantError(e);
     }
@@ -334,7 +346,7 @@ const deleteActual = async (req, res) => {
 
 const getPlanActual = async (req, res) => {
   const queryGet = {
-    text: 'SELECT d.nm_proyek, d.tahun, p.datum_id, p.arr_value AS arrplan, r.arr_value as arractual FROM plan AS p INNER JOIN real AS r ON p.datum_id = r.datum_id INNER JOIN data AS d ON p.datum_id = d.id_datum ORDER BY p.datum_id',
+    text: 'SELECT d.nm_proyek, d.tahun, p.datum_id, p.arr_value AS arrplan, r.arr_value as arractual FROM plan AS p LEFT JOIN real AS r ON p.datum_id = r.datum_id INNER JOIN data AS d ON p.datum_id = d.id_datum ORDER BY p.datum_id',
   };
   const dataRes = await pool.query(queryGet);
   const data = dataRes.rows;
