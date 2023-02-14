@@ -5,7 +5,7 @@ const ClientError = require('../exceptions/clientError');
 const InvariantError = require('../exceptions/invariantError');
 const NotFoundError = require('../exceptions/notFoundError');
 
-const baseUrl = 'https://nice-cyan-sturgeon-toga.cyclic.app/file/';
+const baseUrl = 'http://localhost:3000/';
 
 const resLap = (data) => {
   const options = {
@@ -15,7 +15,10 @@ const resLap = (data) => {
   };
   const objData = data.map((obj) => (typeof (obj.id) === 'number' ? {
     ...obj,
-    file: `${baseUrl}${obj.file}`,
+    file: {
+      download: `${baseUrl}download/${obj.file}`,
+      preview: `${baseUrl}preview/${obj.file}`,
+    },
     created_at: (obj.created_at).toLocaleString('id-ID', options),
   } : obj));
 
@@ -31,6 +34,12 @@ const createLaporan = async (req, res) => {
       noProyek,
       idUser,
     } = req.body;
+
+    if (jenisLaporan === 'Laporan Harian' || jenisLaporan === 'Laporan Mingguan' || jenisLaporan === 'Laporan Bulanan') {
+      if (!urutanLap) {
+        throw new InvariantError('urutan laporan wajib diisi');
+      }
+    }
 
     const qIdData = {
       text: 'SELECT id_datum, no_proyek FROM data WHERE no_proyek = $1',
@@ -368,6 +377,15 @@ const updateBastStatus = async (req, res) => {
   }
 };
 
+const testingpdf = (req, res) => {
+  const fileName = req.params.name;
+
+  fs.readFile(path.join(__dirname, '..', '..', 'resources\\', `${fileName}`), (err, data) => {
+    res.contentType('application/pdf');
+    res.send(data);
+  });
+};
+
 module.exports = {
   createLaporan,
   getLaporanByNoProyekKont,
@@ -378,4 +396,5 @@ module.exports = {
   updateStat,
   deleteLaporan,
   updateBastStatus,
+  testingpdf,
 };
