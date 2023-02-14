@@ -1,0 +1,90 @@
+const pool = require('../config/db');
+
+const getProyekByIdKontraktor = async (req, res) => {
+  try {
+    const { idUser } = req.params;
+    const { pageSize, currentPage, search } = req.query;
+
+    let qFilter;
+    if (!search) {
+      qFilter = `SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE k.id_user = '${idUser}' ORDER BY LOWER(d.no_proyek) ASC`;
+    } else {
+      qFilter = `SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_rekanan) LIKE LOWER('%${search}%') AND k.id_user = '${idUser}'  ORDER BY LOWER(d.no_proyek) ASC`;
+    }
+    let result = await pool.query(qFilter);
+
+    if (pageSize && currentPage) {
+      const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
+      const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
+      const offset = (currentPage - 1) * pageSize;
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      return res.status(200).send({
+        status: 'success',
+        data: result.rows,
+        page: {
+          page_size: pageSize,
+          total_rows: totalRows.rows[0].count,
+          total_pages: totalPages,
+          current_page: currentPage,
+        },
+      });
+    }
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC;`);
+
+    return res.status(200).send({
+      status: 'success',
+      data: result.rows,
+    });
+  } catch (e) {
+    return res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
+  }
+};
+
+const getAllProyek = async (req, res) => {
+  try {
+    const { pageSize, currentPage, search } = req.query;
+
+    let qFilter;
+    if (!search) {
+      qFilter = 'SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum ORDER BY LOWER(d.no_proyek) ASC';
+    } else {
+      qFilter = `SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_rekanan) LIKE LOWER('%${search}%') ORDER BY LOWER(d.no_proyek) ASC`;
+    }
+    let result = await pool.query(qFilter);
+
+    if (pageSize && currentPage) {
+      const totalRows = await pool.query(`SELECT COUNT (id) FROM (${qFilter})sub`);
+      const totalPages = Math.ceil(totalRows.rows[0].count / pageSize);
+      const offset = (currentPage - 1) * pageSize;
+      result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC LIMIT ${pageSize} OFFSET ${offset};`);
+      return res.status(200).send({
+        status: 'success',
+        data: result.rows,
+        page: {
+          page_size: pageSize,
+          total_rows: totalRows.rows[0].count,
+          total_pages: totalPages,
+          current_page: currentPage,
+        },
+      });
+    }
+    result = await pool.query(`SELECT * FROM (${qFilter})sub ORDER BY LOWER(no_proyek) ASC;`);
+    return res.status(200).send({
+      status: 'success',
+      data: result.rows,
+    });
+  } catch (e) {
+    return res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
+  }
+};
+
+module.exports = {
+  getProyekByIdKontraktor,
+  getAllProyek,
+};
