@@ -22,9 +22,9 @@ const getAllKontraktor = async (req, res) => {
     const { pageSize, currentPage, search } = req.query;
     let qFilter;
     if (!search) {
-      qFilter = "SELECT u.id AS id_user, u.username , d.no_proyek, d.nm_proyek, d.nm_rekanan, d.klasifikasi, d.nm_lokasi FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE role = 'kontraktor' ORDER BY LOWER(u.no_proyek) ASC";
+      qFilter = "SELECT u.id AS id_user, u.username , d.no_proyek, d.nm_proyek, d.nm_rekanan, d.klasifikasi, d.nm_lokasi FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE role = 'kontraktor' ORDER BY LOWER(d.no_proyek) ASC";
     } else {
-      qFilter = `SELECT u.id AS id_user, u.username , d.no_proyek, d.nm_proyek, d.nm_rekanan, d.klasifikasi, d.nm_lokasi FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_rekanan) LIKE LOWER('%${search}%') OR LOWER(d.klasifikasi)OR LOWER(d.nm_lokasi) LIKE LOWER('%${search}%') LIKE LOWER('%${search}%') AND role = 'kontraktor' ORDER BY LOWER(u.no_proyek) ASC`;
+      qFilter = `SELECT u.id AS id_user, u.username , d.no_proyek, d.nm_proyek, d.nm_rekanan, d.klasifikasi, d.nm_lokasi FROM users AS u INNER JOIN kontraktor_conn AS k ON u.id = k.id_user INNER JOIN data AS d ON d.id_datum = k.id_datum WHERE LOWER(d.no_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_proyek) LIKE LOWER('%${search}%') OR LOWER(d.nm_rekanan) LIKE LOWER('%${search}%') OR LOWER(d.klasifikasi)OR LOWER(d.nm_lokasi) LIKE LOWER('%${search}%') LIKE LOWER('%${search}%') AND role = 'kontraktor' ORDER BY LOWER(d.no_proyek) ASC`;
     }
     let result = await pool.query(qFilter);
 
