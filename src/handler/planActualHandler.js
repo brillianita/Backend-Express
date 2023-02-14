@@ -68,23 +68,40 @@ const getPlan = async (req, res) => {
 };
 
 const getPlanDetail = async (req, res) => {
-  const { idDatum } = req.params;
+  try {
+    const { idDatum } = req.params;
+    const queryGet = {
+      text: 'SELECT * FROM plan WHERE datum_id = $1 order by id_plan',
+      values: [idDatum],
+    };
+    const dataRes = await pool.query(queryGet);
+    const data = dataRes.rows;
 
-  const queryGet = {
-    text: 'SELECT * FROM plan WHERE datum_id = $1 order by id_plan',
-    values: [idDatum],
-  };
-  const dataRes = await pool.query(queryGet);
-  const data = dataRes.rows;
+    if (!(data.length)) {
+      throw new InvariantError('Tidak ada data plan pada proyek tersebut');
+    }
 
-  if (data[0].arr_value) {
-    data[0].arr_value = JSON.parse(data[0].arr_value);
+    if (data[0].arr_value) {
+      data[0].arr_value = JSON.parse(data[0].arr_value);
+    }
+
+    return res.status(200).send({
+      status: 'success',
+      data,
+    });
+  } catch (e) {
+    console.error(e);
+    if (e instanceof ClientError) {
+      return res.status(400).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal menambahkan data',
+    });
   }
-
-  return res.status(200).send({
-    status: 'success',
-    data,
-  });
 };
 
 const editPlanDetail = async (req, res) => {
@@ -244,23 +261,41 @@ const getActual = async (req, res) => {
 };
 
 const getActualDetail = async (req, res) => {
-  const { idDatum } = req.params;
+  try {
+    const { idDatum } = req.params;
 
-  const queryGet = {
-    text: 'SELECT * FROM real WHERE datum_id = $1 order by id_real',
-    values: [idDatum],
-  };
-  const dataRes = await pool.query(queryGet);
-  const data = dataRes.rows;
+    const queryGet = {
+      text: 'SELECT * FROM real WHERE datum_id = $1 order by id_real',
+      values: [idDatum],
+    };
+    const dataRes = await pool.query(queryGet);
+    const data = dataRes.rows;
+    console.log(data);
 
-  if (data[0].arr_value) {
-    data[0].arr_value = JSON.parse(data[0].arr_value);
+    if (!(data.length)) {
+      throw new InvariantError('Tidak ada data actual pada proyek tersebut');
+    }
+    if (data[0].arr_value) {
+      data[0].arr_value = JSON.parse(data[0].arr_value);
+    }
+
+    return res.status(200).send({
+      status: 'success',
+      data,
+    });
+  } catch (e) {
+    console.error(e);
+    if (e instanceof ClientError) {
+      return res.status(400).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal menambahkan data',
+    });
   }
-
-  return res.status(200).send({
-    status: 'success',
-    data,
-  });
 };
 
 const editActualDetail = async (req, res) => {
