@@ -96,15 +96,32 @@ const updateAdmin = async (req, res) => {
       confirmNewPass,
     } = req.body;
 
-    const qGetAdminById = {
-      text: 'SELECT * FROM users WHERE id=$1',
+    // validate the body request
+    const qGetUser = {
+      text: 'SELECT role, password, id FROM users WHERE id=$1',
       values: [id],
     };
-    const resAdminById = await pool.query(qGetAdminById);
-    if (resAdminById.rows[0].role !== 'admin') {
-      throw new InvariantError('Gagal mengubah data admin. Akun ini bukan role admin');
+    const resGetUser = await pool.query(qGetUser);
+    const dataGetUser = resGetUser.rows;
+
+    if (!dataGetUser.length || dataGetUser[0].role !== 'admin') {
+      throw new InvariantError('Gagal mengubah data admin. Akun ini bukan role admin atau akun tidak ditemukan');
     }
 
+    // const qGetAdminByUsername = {
+    //   text: 'SELECT username, id FROM users WHERE username = $1',
+    //   values: [username],
+    // };
+    // const resAdminByUsername = await pool.query(qGetAdminByUsername);
+    // const dataAdminByUsername = resAdminByUsername.rows;
+    // for (let i = 0; i < dataAdminByUsername.length; i += 1) {
+    //   console.log(dataAdminByUsername[i].id)
+    //   if (dataAdminByUsername[i].username === username && dataAdminByUsername[i].id !== id) {
+    //     throw new InvariantError('Gagal mengubah data admin. Username telah digunakan');
+    //   }
+    // }
+
+    // Update admin data
     const qUpUsername = {
       text: 'UPDATE users SET username = $1  WHERE id = $2 RETURNING *;',
       values: [username, id],
@@ -120,7 +137,7 @@ const updateAdmin = async (req, res) => {
     if (oldPass && newPass && confirmNewPass) {
       const passwordIsValid = bcrypt.compareSync(
         oldPass,
-        resAdminById.rows[0].password,
+        dataGetUser[0].password,
       );
       if (!passwordIsValid) {
         throw new AuthenticationError('Gagal mengubah password. Password lama salah');
@@ -135,6 +152,7 @@ const updateAdmin = async (req, res) => {
       };
       await pool.query(qUpdatePass);
     }
+
     return res.status(201).send({
       status: 'success',
       data: {
@@ -158,7 +176,6 @@ const updateAdmin = async (req, res) => {
   }
 };
 
-// Create user
 const createAdmin = async (req, res) => {
   try {
     const {
@@ -169,7 +186,6 @@ const createAdmin = async (req, res) => {
       password,
       confirmPassword,
     } = req.body;
-    const hashPassword = bcrypt.hashSync(password, 8);
     if (password !== confirmPassword) {
       throw new InvariantError('Gagal membuat akun admin. Password dan konfirmasi password tidak sama');
     }
@@ -179,11 +195,11 @@ const createAdmin = async (req, res) => {
       values: [username],
     };
     const resGetUser = await pool.query(qGetUser);
-    console.log(resGetUser.rows.length);
     if (resGetUser.rows.length) {
       throw new InvariantError('Gagal membuat akun admin. Username telah digunakan');
     }
 
+    const hashPassword = bcrypt.hashSync(password, 8);
     const qAddUser = {
       text: 'INSERT INTO users (id, username, password, role) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
       values: [username, hashPassword, 'admin'],
