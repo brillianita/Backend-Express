@@ -339,7 +339,7 @@ const updateBastStatus = async (req, res) => {
     const { statusBast } = req.body;
 
     const qUpdateStatus = {
-      text: 'UPDATE data SET status_bast1 = $1 WHERE noProyek = $2 RETURNING *',
+      text: 'UPDATE data SET status_bast1 = $1 WHERE no_proyek = $2 RETURNING *',
       values: [statusBast, noProyek],
     };
     const result = await pool.query(qUpdateStatus);
