@@ -108,18 +108,17 @@ const updateAdmin = async (req, res) => {
       throw new InvariantError('Gagal mengubah data admin. Akun ini bukan role admin atau akun tidak ditemukan');
     }
 
-    // const qGetAdminByUsername = {
-    //   text: 'SELECT username, id FROM users WHERE username = $1',
-    //   values: [username],
-    // };
-    // const resAdminByUsername = await pool.query(qGetAdminByUsername);
-    // const dataAdminByUsername = resAdminByUsername.rows;
-    // for (let i = 0; i < dataAdminByUsername.length; i += 1) {
-    //   console.log(dataAdminByUsername[i].id)
-    //   if (dataAdminByUsername[i].username === username && dataAdminByUsername[i].id !== id) {
-    //     throw new InvariantError('Gagal mengubah data admin. Username telah digunakan');
-    //   }
-    // }
+    const qGetAdminBySap = {
+      text: 'SELECT sap, id_user FROM admin_staff WHERE sap = $1',
+      values: [sap],
+    };
+    const resAdminBySap = await pool.query(qGetAdminBySap);
+    const dataAdminBySap = resAdminBySap.rows;
+    for (let i = 0; i < dataAdminBySap.length; i += 1) {
+      if (dataAdminBySap[i] && dataAdminBySap[i].id_user !== parseInt(id, 10)) {
+        throw new InvariantError('Gagal mengubah data admin. sap telah digunakan');
+      }
+    }
 
     // Update admin data
     const qUpUsername = {
@@ -199,6 +198,18 @@ const createAdmin = async (req, res) => {
       throw new InvariantError('Gagal membuat akun admin. Username telah digunakan');
     }
 
+    const qGetAdminBySap = {
+      text: 'SELECT sap, id_user FROM admin_staff WHERE sap = $1',
+      values: [sap],
+    };
+    const resAdminBySap = await pool.query(qGetAdminBySap);
+    const dataAdminBySap = resAdminBySap.rows;
+    for (let i = 0; i < dataAdminBySap.length; i += 1) {
+      if (dataAdminBySap[i]) {
+        throw new InvariantError('Gagal membuat akun admin. sap telah digunakan');
+      }
+    }
+
     const hashPassword = bcrypt.hashSync(password, 8);
     const qAddUser = {
       text: 'INSERT INTO users (id, username, password, role) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
@@ -206,19 +217,19 @@ const createAdmin = async (req, res) => {
     };
     const resUser = await pool.query(qAddUser);
 
-    const qStaf = {
+    const qAdmin = {
       text: 'INSERT INTO admin_staff (id, nama, sap, seksi, id_user) VALUES (DEFAULT, $1, $2, $3, $4) RETURNING *',
       values: [nama, sap, seksi, resUser.rows[0].id],
     };
-    const resStaf = await pool.query(qStaf);
+    const ressAdmin = await pool.query(qAdmin);
 
     return res.status(201).send({
       status: 'success',
       data: {
         username: resUser.rows[0].username,
-        nama: resStaf.rows[0].nama,
-        sap: resStaf.rows[0].sap,
-        seksi: resStaf.rows[0].seksi,
+        nama: ressAdmin.rows[0].nama,
+        sap: ressAdmin.rows[0].sap,
+        seksi: ressAdmin.rows[0].seksi,
       },
     });
   } catch (e) {

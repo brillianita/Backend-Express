@@ -1,5 +1,9 @@
 const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
+const ClientError = require('../exceptions/clientError');
+const InvariantError = require('../exceptions/invariantError');
+const NotFoundError = require('../exceptions/notFoundError');
+const AuthenticationError = require('../exceptions/authError');
 
 const getAllStaff = async (req, res) => {
   const { pageSize, currentPage, search } = req.query;
@@ -48,20 +52,20 @@ const getAllStaff = async (req, res) => {
 const getStaffById = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!id || Number.isNaN(Number(id))) {
+      throw new InvariantError('Gagal mengambil data admin. Mohon isi id admin dengan benar');
+    }
+
     const query = {
       text: "SELECT a.id_user, a.nama, a.sap, a.seksi, u.username FROM admin_staff AS a INNER JOIN users AS u ON a.id_user = u.id WHERE id_user=$1 AND u.role='staff'",
       values: [id],
     };
     const result = await pool.query(query);
 
-    // Check if data is null
-    // if (!result.rows.length) {
-    //     throw new NotFoundError(`User Not Found!`);
-    // }
-    // Check if data is null
-    // if (!result.rows.length) {
-    //     throw new NotFoundError(`User Not Found!`);
-    // }
+    if (!result.rows.length) {
+      throw new NotFoundError(`Staff dengan id ${id} tidak ditemukan`);
+    }
 
     return res.status(200).send({
       status: 'success',
@@ -69,13 +73,13 @@ const getStaffById = async (req, res) => {
 
     });
   } catch (e) {
-    // console.log(e);
-    // if (e instanceof ClientError) {
-    //     res.status(e.statusCode).send({
-    //         status: 'fail',
-    //         message: e.message,
-    //     })
-    // }
+    console.log(e);
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
     return res.status(500).send({
       status: 'fail',
       message: 'Sorry there was a failure on our server.',
@@ -85,29 +89,46 @@ const getStaffById = async (req, res) => {
 
 // Create user
 const createStaff = async (req, res) => {
-  const {
-    nama,
-    sap,
-    seksi,
-    username,
-    password,
-    confirmPassword,
-  } = req.body;
-
   try {
+    const {
+      nama,
+      sap,
+      seksi,
+      username,
+      password,
+      confirmPassword,
+    } = req.body;
     const hashPassword = bcrypt.hashSync(password, 8);
     if (password !== confirmPassword) {
-      return res.status(400).send({
-        status: 'fail',
-        message: 'Password and Confirm Password does not match',
-      });
+      throw new InvariantError('Gagal membuat akun admin. Password dan konfirmasi password tidak sama');
     }
-    const qUser = {
+    const qGetUser = {
+      text: 'SELECT username FROM users WHERE username = $1',
+      values: [username],
+    };
+    const resGetUser = await pool.query(qGetUser);
+    if (resGetUser.rows.length) {
+      throw new InvariantError('Gagal membuat akun admin. Username telah digunakan');
+    }
+
+    const qGetStaffBySap = {
+      text: 'SELECT sap, id_user FROM admin_staff WHERE sap = $1',
+      values: [sap],
+    };
+    const resStaffBySap = await pool.query(qGetStaffBySap);
+    const dataStaffBySap = resStaffBySap.rows;
+    for (let i = 0; i < dataStaffBySap.length; i += 1) {
+      if (dataStaffBySap[i]) {
+        throw new InvariantError('Gagal membuat akun staff. sap telah digunakan');
+      }
+    }
+
+    const qAddUser = {
       text: 'INSERT INTO users (id, username, password, role) VALUES (DEFAULT, $1, $2, $3) RETURNING *',
       values: [username, hashPassword, 'staff'],
     };
 
-    const resUser = await pool.query(qUser);
+    const resUser = await pool.query(qAddUser);
     const qStaf = {
       text: 'INSERT INTO admin_staff (id, nama, sap, seksi, id_user) VALUES (DEFAULT, $1, $2, $3, $4)',
       values: [nama, sap, seksi, resUser.rows[0].id],
@@ -119,6 +140,12 @@ const createStaff = async (req, res) => {
       message: 'Register Successfull!',
     });
   } catch (e) {
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
     return res.status(400).send({
       status: 'fail',
       message: e.message,
@@ -127,29 +154,46 @@ const createStaff = async (req, res) => {
 };
 
 const updateStaff = async (req, res) => {
-  const { id } = req.params;
-  const {
-    username,
-    nama,
-    sap,
-    seksi,
-    oldPass,
-    newPass,
-    confirmNewPass,
-  } = req.body;
-
   try {
-    const query = {
-      text: 'SELECT id, password, role FROM users WHERE id=$1',
+    const { id } = req.params;
+    if (!id || Number.isNaN(Number(id))) {
+      throw new InvariantError('Gagal mengambil data staff. Mohon isi id staff dengan benar');
+    }
+
+    const {
+      username,
+      nama,
+      sap,
+      seksi,
+      oldPass,
+      newPass,
+      confirmNewPass,
+    } = req.body;
+
+    // validate the body request
+    const qGetUser = {
+      text: 'SELECT role, password, id FROM users WHERE id=$1',
       values: [id],
     };
-    const result = await pool.query(query);
-    if (result.rows[0].role !== 'staff') {
-      return res.status(401).send({
-        status: 'fail',
-        message: 'invalid request',
-      });
+    const resGetUser = await pool.query(qGetUser);
+    const dataGetUser = resGetUser.rows;
+
+    if (!dataGetUser.length || dataGetUser[0].role !== 'admin') {
+      throw new InvariantError('Gagal mengubah data staff. Akun ini bukan role staff atau akun tidak ditemukan');
     }
+
+    const qGetAdminBySap = {
+      text: 'SELECT sap, id_user FROM admin_staff WHERE sap = $1',
+      values: [sap],
+    };
+    const resAdminBySap = await pool.query(qGetAdminBySap);
+    const dataAdminBySap = resAdminBySap.rows;
+    for (let i = 0; i < dataAdminBySap.length; i += 1) {
+      if (dataAdminBySap[i] && dataAdminBySap[i].id_user !== parseInt(id, 10)) {
+        throw new InvariantError('Gagal mengubah data staff. sap telah digunakan');
+      }
+    }
+
     const qUpUsername = {
       text: 'UPDATE users SET username = $1  WHERE id = $2;',
       values: [username, id],
@@ -164,22 +208,15 @@ const updateStaff = async (req, res) => {
     if (oldPass && newPass && confirmNewPass) {
       const passwordIsValid = bcrypt.compareSync(
         oldPass,
-        result.rows[0].password,
+        dataGetUser[0].password,
       );
       // If the password is not valid, send the error message
       if (!passwordIsValid) {
-        return res.status(401).send({
-          status: 'fail',
-          message: 'Incorrect old password!',
-        });
-        // throw new AuthenticationError('Invalid Password!');
+        throw new AuthenticationError('Gagal mengubah password. Password lama salah');
       }
       const hashPassword = bcrypt.hashSync(newPass, 8);
       if (newPass !== confirmNewPass) {
-        return res.status(400).send({
-          status: 'fail',
-          message: 'Password and confirm password does not match',
-        });
+        throw new InvariantError('Gagal mengubah password. Password baru dan Konfirmasi Password tidak sama');
       }
       const qUpdatePass = {
         text: 'UPDATE users SET password = $1  WHERE id = $2;',
@@ -192,6 +229,12 @@ const updateStaff = async (req, res) => {
       message: 'Staff has been updated',
     });
   } catch (e) {
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
     return res.status(500).send({
       status: 'error',
       message: e.message,
