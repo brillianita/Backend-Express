@@ -377,7 +377,7 @@ const updateBastStatus = async (req, res) => {
   }
 };
 
-const testingpdf = (req, res) => {
+const previewPdf = (req, res) => {
   const fileName = req.params.name;
 
   fs.readFile(path.join(__dirname, '..', '..', 'resources\\', `${fileName}`), (err, data) => {
@@ -396,5 +396,5 @@ module.exports = {
   updateStat,
   deleteLaporan,
   updateBastStatus,
-  testingpdf,
+  previewPdf,
 };
