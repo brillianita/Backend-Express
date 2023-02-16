@@ -15,7 +15,7 @@ exports.up = ((pgm) => {
     },
     file: {
       type: 'VARCHAR',
-      notNull: true,
+      notNull: false,
     },
     created_at: {
       type: 'TIMESTAMP',

@@ -6,7 +6,7 @@ exports.up = ((pgm) => {
       primaryKey: true,
     },
     jabatan: {
-      type: 'TEXT',
+      type: 'VARCHAR',
       notNull: true,
     },
     jmlh: {
@@ -14,7 +14,7 @@ exports.up = ((pgm) => {
       notNull: true,
     },
     status_hari: {
-      type: 'INTEGER',
+      type: 'VARCHAR',
       notNull: true,
     },
     id_lap_harian: {

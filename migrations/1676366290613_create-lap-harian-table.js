@@ -9,6 +9,22 @@ exports.up = ((pgm) => {
       type: 'TIMESTAMP',
       notNull: true,
     },
+    aktivitas: {
+      type: 'TEXT[]',
+      notNull: true,
+    },
+    rencana: {
+      type: 'TEXT[]',
+      notNull: true,
+    },
+    status: {
+      type: 'VARCHAR',
+      notNull: true,
+    },
+    note: {
+      type: 'TEXT[]',
+      notNull: false,
+    },
     id_laporan: {
       type: 'INTEGER',
       notNull: true,
