@@ -14,7 +14,7 @@ exports.up = ((pgm) => {
       notNull: true,
     },
     status_hari: {
-      type: 'INTEGER',
+      type: 'VARCHAR',
       notNull: true,
     },
     id_lap_harian: {

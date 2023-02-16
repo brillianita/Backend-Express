@@ -8,6 +8,7 @@ const router = Router();
 // KONTRAKTOR FEATURE
 router.get('/laporan/:noProyek', laporanHandler.getLaporanByNoProyekKont);
 router.post('/laporan/tambah', uploadFile.upload.single('file'), laporanHandler.createLaporan);
+router.post('/lapHarian/tambah', laporanHandler.createLapHarian);
 router.get('/detailLaporan/:id', laporanHandler.getLaporanDetail);
 router.put('/laporan/edit/:id', uploadFile.upload.single('file'), laporanHandler.updateLaporan);
 
