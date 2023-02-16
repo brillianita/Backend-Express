@@ -356,6 +356,10 @@ const updateBastStatus = async (req, res) => {
     const { noProyek } = req.params;
     const { statusBast, catatanBast } = req.body;
 
+    if (statusBast === 'Rejected' && !catatanBast) {
+      throw new InvariantError('Catatan Bast tidak boleh kosong');
+    }
+
     const qUpdateStatus = {
       text: 'UPDATE data SET status_bast1 = $1, catatan_bast = $2 WHERE no_proyek = $3 RETURNING *',
       values: [statusBast, catatanBast, noProyek],
@@ -380,6 +384,12 @@ const updateBastStatus = async (req, res) => {
       });
     }
   } catch (e) {
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
     res.status(500).send({
       status: 'error',
       message: e.message,
