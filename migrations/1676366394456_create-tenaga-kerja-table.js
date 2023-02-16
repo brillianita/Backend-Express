@@ -6,7 +6,7 @@ exports.up = ((pgm) => {
       primaryKey: true,
     },
     jabatan: {
-      type: 'TEXT',
+      type: 'VARCHAR',
       notNull: true,
     },
     jmlh: {

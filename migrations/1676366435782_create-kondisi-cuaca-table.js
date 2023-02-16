@@ -6,19 +6,19 @@ exports.up = ((pgm) => {
       primaryKey: true,
     },
     baik: {
-      type: 'TEXT',
+      type: 'TEXT[]',
       notNull: false,
     },
     mendung: {
-      type: 'TEXT',
+      type: 'TEXT[]',
       notNull: false,
     },
     hujan_tinggi: {
-      type: 'TEXT',
+      type: 'TEXT[]',
       notNull: false,
     },
     hujan_rendah: {
-      type: 'TEXT',
+      type: 'TEXT[]',
       notNull: false,
     },
     id_lap_harian: {
