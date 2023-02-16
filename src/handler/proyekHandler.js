@@ -84,7 +84,28 @@ const getAllProyek = async (req, res) => {
   }
 };
 
+const getProyekByNoProyek = async (req, res) => {
+  try {
+    const { noProyek } = req.params;
+    const query = {
+      text: 'SELECT k.id, d.no_proyek, d.nm_proyek, d.nm_rekanan, d.status_bast1, d.catatan_bast FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE d.no_proyek = $1 ORDER BY LOWER(d.no_proyek) ASC',
+      values: [noProyek],
+    };
+    const result = await pool.query(query);
+    return res.status(200).send({
+      status: 'success',
+      data: result.rows,
+    });
+  } catch (e) {
+    return res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
   getProyekByIdKontraktor,
   getAllProyek,
+  getProyekByNoProyek,
 };
