@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const laporanHandler = require('../handler/laporanHandler');
+const testing = require('../handler/testing');
 const uploadFile = require('../middleware/uploadFile');
 
 const router = Router();
@@ -16,6 +17,7 @@ router.put('/laporanReview/edit/:id', laporanHandler.updateStat);
 router.delete('/laporan/:id', laporanHandler.deleteLaporan);
 router.put('/bast/:noProyek', laporanHandler.updateBastStatus);
 router.get('/download/:name', laporanHandler.download);
-router.get('/preview/:name', laporanHandler.testingpdf);
+router.get('/preview/:name', laporanHandler.previewPdf);
+router.get('/testing', testing.testing);
 
 module.exports = router;
