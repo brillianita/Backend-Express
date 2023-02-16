@@ -5,7 +5,7 @@ const InvariantError = require('../exceptions/invariantError');
 const NotFoundError = require('../exceptions/notFoundError');
 const AuthenticationError = require('../exceptions/authError');
 
-const arraySeperator = (arrData) => {
+const arraySeparator = (arrData) => {
   let arrDataStr = '';
   for (let i = 0; i < arrData.length; i += 1) {
     if (i === arrData.length - 1) {
@@ -102,7 +102,7 @@ const createKontraktor = async (req, res) => {
       confirmPassword,
     } = req.body;
 
-    const noProyekStr = arraySeperator(noProyek);
+    const noProyekStr = arraySeparator(noProyek);
     const qGetData = {
       text: `SELECT id_datum, no_proyek FROM data WHERE no_proyek in (${noProyekStr}) ORDER BY id_datum ASC`,
     };
@@ -116,7 +116,7 @@ const createKontraktor = async (req, res) => {
       idDatum.push(resData.rows[i].id_datum);
     }
 
-    const arrIdStr = arraySeperator(idDatum);
+    const arrIdStr = arraySeparator(idDatum);
     const qGetKon = {
       text: `SELECT k.id_datum, k.id_user, d.no_proyek FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE k.id_datum in (${arrIdStr}) ORDER BY id_datum ASC`,
     };
@@ -192,7 +192,7 @@ const updateKontraktor = async (req, res) => {
       throw new InvariantError('Gagal mengubah data kontraktor. Akun ini bukan role kontraktor atau akun tidak ditemukan');
     }
 
-    const noProyekStr = arraySeperator(noProyek);
+    const noProyekStr = arraySeparator(noProyek);
     const qGetData = {
       text: `SELECT id_datum, no_proyek FROM data WHERE no_proyek in (${noProyekStr}) ORDER BY id_datum ASC`,
     };
@@ -205,7 +205,7 @@ const updateKontraktor = async (req, res) => {
       idDatum.push(resData.rows[i].id_datum);
     }
 
-    const arrIdStr = arraySeperator(idDatum);
+    const arrIdStr = arraySeparator(idDatum);
     const qGetKon = {
       text: `SELECT k.id_datum, k.id_user, d.no_proyek FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE k.id_datum in (${arrIdStr}) ORDER BY id_datum ASC`,
     };

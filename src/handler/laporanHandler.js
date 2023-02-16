@@ -35,22 +35,31 @@ const createLaporan = async (req, res) => {
       idUser,
     } = req.body;
 
-    if (jenisLaporan === 'Laporan Harian' || jenisLaporan === 'Laporan Mingguan' || jenisLaporan === 'Laporan Bulanan') {
+    if (jenisLaporan === 'Laporan Mingguan' || jenisLaporan === 'Laporan Bulanan') {
       if (!urutanLap) {
         throw new InvariantError('urutan laporan wajib diisi');
       }
     }
 
     const qIdData = {
-      text: 'SELECT id_datum, no_proyek FROM data WHERE no_proyek = $1',
+      text: 'SELECT k.id_datum, k.id_user, d.no_proyek FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE d.no_proyek = $1',
       values: [noProyek],
     };
     const resQId = await pool.query(qIdData);
     if (!resQId.rows.length) {
-      throw new NotFoundError(`Kontraktor dengan id ${idUser} tidak ditemukan`);
+      throw new NotFoundError(`noProyek ${noProyek} tidak ditemukan`);
     }
 
-    const createdAt = new Date().toJSON().slice(0, 10);
+    const qIdKon = {
+      text: 'SELECT id_user FROM kontraktor_conn WHERE id_user = $1',
+      values: [idUser],
+    };
+    const resQIdKon = await pool.query(qIdKon);
+    if (!resQIdKon.rows.length) {
+      throw new NotFoundError('Pengguna tidak ditemukan atau tidak memiliki role kontraktor');
+    }
+
+    const createdAt = new Date(new Date().setHours(0, 0, 0, 0));
     const query = {
       text: `INSERT INTO laporan (id, jenis_laporan, urutan_lap, file, created_at, catatan, status, id_datum, id_user) VALUES (DEFAULT, '${jenisLaporan}', '${urutanLap}', '${namaFile}', '${createdAt}', null, 'Ditinjau', '${resQId.rows[0].id_datum}', '${idUser}') RETURNING *;`,
     };
@@ -379,11 +388,188 @@ const updateBastStatus = async (req, res) => {
 
 const previewPdf = (req, res) => {
   const fileName = req.params.name;
-
   fs.readFile(path.join(__dirname, '..', '..', 'resources\\', `${fileName}`), (err, data) => {
     res.contentType('application/pdf');
     res.send(data);
   });
+};
+
+const createLapHarian = async (req, res) => {
+  try {
+    const {
+      urutanLap,
+      noProyek,
+      idUser,
+      tgl,
+      aktivitas,
+      rencana,
+      note,
+      jabatanhrini,
+      jmlhhrini,
+      jabatanbsk,
+      jmlhbsk,
+      baik,
+      mendung,
+      hujanTinggi,
+      hujanRendah,
+      alat,
+      qty,
+      masalah,
+      solusi,
+    } = req.body;
+
+    // Validate the body request
+    // eslint-disable-next-line max-len
+    if (!aktivitas || !rencana || !jabatanhrini || !jmlhhrini || !alat || !qty || !jabatanbsk || !jmlhbsk) {
+      throw new InvariantError('Aktivitas or Rencana or Jabatan or jumlah or Alat or qty wajib diisi!');
+    }
+
+    if (typeof (aktivitas) !== 'object' || typeof (rencana) !== 'object' || typeof (baik) !== 'object' || typeof (mendung) !== 'object' || typeof (hujanTinggi) !== 'object' || typeof (hujanRendah) !== 'object' || typeof (jabatanhrini) !== 'object' || typeof (jmlhhrini) !== 'object' || typeof (jabatanbsk) !== 'object' || typeof (jmlhbsk) !== 'object' || typeof (alat) !== 'object' || typeof (qty) !== 'object' || typeof (masalah) !== 'object' || typeof (solusi) !== 'object') {
+      throw new InvariantError('Pastikan semua tipe data tiap field sudah benar');
+    }
+
+    // eslint-disable-next-line max-len
+    if (jabatanhrini.length !== jmlhhrini.length || jabatanbsk.length !== jmlhbsk.length || alat.length !== qty.length || masalah.length !== solusi.length) {
+      throw new InvariantError('Pastikan panjang field pada array sudah benar');
+    }
+
+    const aktivitasStr = `[${aktivitas}]`;
+    const rencanaStr = `[${rencana}]`;
+    const noteStr = `[${note}]`;
+    const baikStr = `[${baik}]`;
+    const mendungStr = `[${mendung}]`;
+    const hujanTinggiStr = `[${hujanTinggi}]`;
+    const hujanRendahStr = `[${hujanRendah}]`;
+
+    const qIdData = {
+      text: 'SELECT k.id_datum, k.id_user, d.no_proyek FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE d.no_proyek = $1',
+      values: [noProyek],
+    };
+    const resQId = await pool.query(qIdData);
+    if (!resQId.rows.length) {
+      throw new NotFoundError(`noProyek ${noProyek} tidak ditemukan`);
+    }
+
+    const qIdKon = {
+      text: 'SELECT id_user FROM kontraktor_conn WHERE id_user = $1',
+      values: [idUser],
+    };
+    const resQIdKon = await pool.query(qIdKon);
+    if (!resQIdKon.rows.length) {
+      throw new NotFoundError('Pengguna tidak ditemukan atau tidak memiliki role kontraktor');
+    }
+
+    const currDate = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+    const tglLap = Date.parse(tgl);
+    const status = tglLap < currDate ? 'Tepat Waktu' : 'Terlambat';
+
+    const createdAt = new Date(new Date().setHours(0, 0, 0, 0));
+    const qLap = {
+      text: 'INSERT INTO laporan (id, jenis_laporan, urutan_lap, created_at, catatan, status, id_datum, id_user) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7) RETURNING *;',
+      values: ['Laporan Harian', urutanLap, createdAt, null, 'Ditinjau', resQId.rows[0].id_datum, idUser],
+    };
+    const rLap = await pool.query(qLap);
+
+    const qLapHar = {
+      text: 'INSERT INTO lap_harian (id, id_laporan, aktivitas, rencana, status, tgl, note) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6) RETURNING *;',
+      values: [rLap.rows[0].id, aktivitasStr, rencanaStr, status, tgl, noteStr],
+    };
+    const rLapHar = await pool.query(qLapHar);
+
+    const ptenKerjaHrIni = [];
+    let qTenKerjaHrIni;
+    for (let i = 0; i < jabatanhrini.length; i += 1) {
+      qTenKerjaHrIni = {
+        text: 'INSERT INTO tenaga_kerja (id, jabatan, jmlh, status_hari, id_lap_harian) VALUES (DEFAULT, $1, $2, $3, $4)',
+        values: [
+          jabatanhrini[i],
+          jmlhhrini[i],
+          'hari ini',
+          rLapHar.rows[0].id,
+        ],
+      };
+      ptenKerjaHrIni.push(pool.query(qTenKerjaHrIni));
+    }
+
+    const ptenKerjaBsk = [];
+    let qTenKerjaBsk;
+    for (let i = 0; i < jabatanbsk.length; i += 1) {
+      qTenKerjaBsk = {
+        text: 'INSERT INTO tenaga_kerja (id, jabatan, jmlh, status_hari, id_lap_harian) VALUES (DEFAULT, $1, $2, $3, $4)',
+        values: [
+          jabatanbsk[i],
+          jmlhbsk[i],
+          'besok',
+          rLapHar.rows[0].id,
+        ],
+      };
+      ptenKerjaBsk.push(pool.query(qTenKerjaBsk));
+    }
+
+    const qkondCuaca = {
+      text: 'INSERT INTO kond_cuaca (id, baik, mendung, hujan_tinggi, hujan_rendah, id_lap_harian) VALUES (DEFAULT, $1, $2, $3, $4, $5)',
+      values: [
+        baikStr,
+        mendungStr,
+        hujanTinggiStr,
+        hujanRendahStr,
+        rLapHar.rows[0].id,
+      ],
+    };
+
+    const pAlatKerja = [];
+    let qAlatKerja;
+    for (let i = 0; i < alat.length; i += 1) {
+      qAlatKerja = {
+        text: 'INSERT INTO alat_kerja (id, alat, qty, id_lap_harian) VALUES (DEFAULT, $1, $2, $3)',
+        values: [
+          alat[i],
+          qty[i],
+          rLapHar.rows[0].id,
+        ],
+      };
+      pAlatKerja.push(pool.query(qAlatKerja));
+    }
+
+    const pNote = [];
+    let qNote;
+    for (let i = 0; i < masalah.length; i += 1) {
+      qNote = {
+        text: 'INSERT INTO note (id, masalah, solusi, id_lap_harian) VALUES (DEFAULT, $1, $2, $3)',
+        values: [
+          masalah[i],
+          solusi[i],
+          rLapHar.rows[0].id,
+        ],
+      };
+      pNote.push(pool.query(qNote));
+    }
+
+    try {
+      await Promise.all(ptenKerjaHrIni);
+      await Promise.all(ptenKerjaBsk);
+      await pool.query(qkondCuaca);
+      await Promise.all(pAlatKerja);
+      await Promise.all(pNote);
+    } catch (e) {
+      throw new InvariantError(e);
+    }
+    return res.status(201).send({
+      status: 'success',
+      message: 'laporan has been created successfully',
+    });
+  } catch (e) {
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+    return res.status(500).send({
+      status: 'error',
+      message: e.message,
+    });
+  }
 };
 
 module.exports = {
@@ -397,4 +583,5 @@ module.exports = {
   deleteLaporan,
   updateBastStatus,
   previewPdf,
+  createLapHarian,
 };
