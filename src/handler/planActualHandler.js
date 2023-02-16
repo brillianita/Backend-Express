@@ -380,25 +380,38 @@ const deleteActual = async (req, res) => {
 };
 
 const getPlanActual = async (req, res) => {
-  const queryGet = {
-    text: 'SELECT d.nm_proyek, d.tahun, p.datum_id, p.arr_value AS arrplan, r.arr_value as arractual FROM plan AS p LEFT JOIN real AS r ON p.datum_id = r.datum_id INNER JOIN data AS d ON p.datum_id = d.id_datum ORDER BY p.datum_id',
-  };
-  const dataRes = await pool.query(queryGet);
-  const data = dataRes.rows;
+  try {
+    const queryGet = {
+      text: 'SELECT d.nm_proyek, d.tahun, p.datum_id, p.arr_value AS arrplan, r.arr_value as arractual FROM plan AS p LEFT JOIN real AS r ON p.datum_id = r.datum_id INNER JOIN data AS d ON p.datum_id = d.id_datum ORDER BY p.datum_id',
+    };
+    const dataRes = await pool.query(queryGet);
+    const data = dataRes.rows;
 
-  for (let i = 0; i < data.length; i += 1) {
-    if (data[i].arrplan) {
-      data[i].arrplan = JSON.parse(data[i].arrplan);
+    for (let i = 0; i < data.length; i += 1) {
+      if (data[i].arrplan) {
+        data[i].arrplan = JSON.parse(data[i].arrplan);
+      }
+      if (data[i].arractual) {
+        data[i].arractual = JSON.parse(data[i].arractual);
+      }
     }
-    if (data[i].arractual) {
-      data[i].arractual = JSON.parse(data[i].arractual);
+    return res.status(200).send({
+      status: 'success',
+      data,
+    });
+  } catch (e) {
+    console.error(e);
+    if (e instanceof ClientError) {
+      return res.status(400).send({
+        status: 'fail',
+        message: e.message,
+      });
     }
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal menambahkan data',
+    });
   }
-
-  return res.status(200).send({
-    status: 'success',
-    data,
-  });
 };
 
 module.exports = {

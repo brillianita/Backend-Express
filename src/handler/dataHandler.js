@@ -193,6 +193,7 @@ const addDatum = async (req, res) => {
       throw new InvariantError('Masukkan array arrPlan dengan benar!');
     }
 
+    // Tambahkan validasi di siniii weh, untuk tiap tipe, kayak nm jenis, tahun, no proyek, dsb
     const queryInsert = {
       text: 'INSERT INTO data (id_datum, nm_jenis, tahun, no_proyek, nm_proyek, nm_rekanan, tgl_mulai, tgl_akhir, nilai, nm_kota, nm_lokasi, keterangan, klasifikasi) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;',
       values: [
@@ -228,6 +229,11 @@ const addDatum = async (req, res) => {
     } catch (e) {
       throw new InvariantError(e);
     }
+    const queryInsertActual = {
+      text: 'INSERT INTO real (datum_id) VALUES ($1)',
+      values: [poolRes.rows[0].id_datum],
+    };
+    await pool.query(queryInsertActual);
 
     return res.status(201).send({
       status: 'success',
