@@ -16,6 +16,44 @@ const getData = async (req, res) => {
   });
 };
 
+const getProgress = async (req, res) => {
+  try {
+    const { idUser } = req.query;
+
+    let queryGet;
+    if (idUser) {
+      queryGet = {
+        text: "SELECT COUNT(d.id_datum) FILTER (WHERE LOWER(d.progress) = 'leading') as leading, COUNT(d.id_datum) FILTER (WHERE LOWER(d.progress) = 'late') as late, COUNT(d.id_datum) FILTER (WHERE LOWER(d.progress) = 'on track') as onTrack FROM data as d INNER JOIN kontraktor_conn as k ON d.id_datum = k.id_datum WHERE k.id_user= $1;",
+        values: [idUser],
+      };
+    } else {
+      queryGet = {
+        text: "SELECT COUNT(d.id_datum) FILTER (WHERE LOWER(d.progress) = 'leading') as leading, COUNT(d.id_datum) FILTER (WHERE LOWER(d.progress) = 'late') as late, COUNT(d.id_datum) FILTER (WHERE LOWER(d.progress) = 'on track') as onTrack FROM data as d;",
+      };
+    }
+    const poolRes = await pool.query(queryGet);
+    const data = poolRes.rows[0];
+    return res.status(200).send({
+      status: 'success',
+      data,
+    });
+  } catch (e) {
+    console.error(e);
+
+    if (e instanceof ClientError) {
+      return res.status(400).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal mengambil data',
+    });
+  }
+};
+
 const getStatistikbyDataStatus = async (req, res) => {
   try {
     const { tahun, idUser } = req.query;
@@ -272,4 +310,5 @@ module.exports = {
   getStatistikMonPr,
   getStatistikPrKonstruksi,
   getStatistikPko,
+  getProgress,
 };
