@@ -10,11 +10,11 @@ exports.up = ((pgm) => {
       notNull: true,
     },
     aktivitas: {
-      type: 'TEXT',
+      type: 'TEXT[]',
       notNull: true,
     },
     rencana: {
-      type: 'TEXT',
+      type: 'TEXT[]',
       notNull: true,
     },
     status: {
@@ -22,7 +22,7 @@ exports.up = ((pgm) => {
       notNull: true,
     },
     note: {
-      type: 'TEXT',
+      type: 'TEXT[]',
       notNull: false,
     },
     id_laporan: {

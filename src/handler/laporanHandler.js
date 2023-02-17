@@ -354,11 +354,15 @@ const deleteLaporan = async (req, res) => {
 const updateBastStatus = async (req, res) => {
   try {
     const { noProyek } = req.params;
-    const { statusBast } = req.body;
+    const { statusBast, catatanBast } = req.body;
+
+    if (statusBast === 'Rejected' && !catatanBast) {
+      throw new InvariantError('Catatan Bast tidak boleh kosong');
+    }
 
     const qUpdateStatus = {
-      text: 'UPDATE data SET status_bast1 = $1 WHERE no_proyek = $2 RETURNING *',
-      values: [statusBast, noProyek],
+      text: 'UPDATE data SET status_bast1 = $1, catatan_bast = $2 WHERE no_proyek = $3 RETURNING *',
+      values: [statusBast, catatanBast, noProyek],
     };
     const result = await pool.query(qUpdateStatus);
 
@@ -375,10 +379,17 @@ const updateBastStatus = async (req, res) => {
         status: 'success',
         data: {
           statusBast: result.rows[0].status_bast1,
+          urlFormBast: null,
         },
       });
     }
   } catch (e) {
+    if (e instanceof ClientError) {
+      res.status(e.statusCode).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
     res.status(500).send({
       status: 'error',
       message: e.message,
@@ -424,7 +435,7 @@ const createLapHarian = async (req, res) => {
       throw new InvariantError('Aktivitas or Rencana or Jabatan or jumlah or Alat or qty wajib diisi!');
     }
 
-    if (typeof (aktivitas) !== 'object' || typeof (rencana) !== 'object' || typeof (baik) !== 'object' || typeof (mendung) !== 'object' || typeof (hujanTinggi) !== 'object' || typeof (hujanRendah) !== 'object' || typeof (jabatanhrini) !== 'object' || typeof (jmlhhrini) !== 'object' || typeof (jabatanbsk) !== 'object' || typeof (jmlhbsk) !== 'object' || typeof (alat) !== 'object' || typeof (qty) !== 'object' || typeof (masalah) !== 'object' || typeof (solusi) !== 'object') {
+    if (typeof (rencana) !== 'object' || typeof (baik) !== 'object' || typeof (mendung) !== 'object' || typeof (hujanTinggi) !== 'object' || typeof (hujanRendah) !== 'object' || typeof (jabatanhrini) !== 'object' || typeof (jmlhhrini) !== 'object' || typeof (jabatanbsk) !== 'object' || typeof (jmlhbsk) !== 'object' || typeof (alat) !== 'object' || typeof (qty) !== 'object' || typeof (masalah) !== 'object' || typeof (solusi) !== 'object') {
       throw new InvariantError('Pastikan semua tipe data tiap field sudah benar');
     }
 
@@ -432,14 +443,6 @@ const createLapHarian = async (req, res) => {
     if (jabatanhrini.length !== jmlhhrini.length || jabatanbsk.length !== jmlhbsk.length || alat.length !== qty.length || masalah.length !== solusi.length) {
       throw new InvariantError('Pastikan panjang field pada array sudah benar');
     }
-
-    const aktivitasStr = `[${aktivitas}]`;
-    const rencanaStr = `[${rencana}]`;
-    const noteStr = `[${note}]`;
-    const baikStr = `[${baik}]`;
-    const mendungStr = `[${mendung}]`;
-    const hujanTinggiStr = `[${hujanTinggi}]`;
-    const hujanRendahStr = `[${hujanRendah}]`;
 
     const qIdData = {
       text: 'SELECT k.id_datum, k.id_user, d.no_proyek FROM kontraktor_conn AS k INNER JOIN data AS d ON k.id_datum = d.id_datum WHERE d.no_proyek = $1',
@@ -472,7 +475,7 @@ const createLapHarian = async (req, res) => {
 
     const qLapHar = {
       text: 'INSERT INTO lap_harian (id, id_laporan, aktivitas, rencana, status, tgl, note) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6) RETURNING *;',
-      values: [rLap.rows[0].id, aktivitasStr, rencanaStr, status, tgl, noteStr],
+      values: [rLap.rows[0].id, aktivitas, rencana, status, tgl, note],
     };
     const rLapHar = await pool.query(qLapHar);
 
@@ -509,10 +512,10 @@ const createLapHarian = async (req, res) => {
     const qkondCuaca = {
       text: 'INSERT INTO kond_cuaca (id, baik, mendung, hujan_tinggi, hujan_rendah, id_lap_harian) VALUES (DEFAULT, $1, $2, $3, $4, $5)',
       values: [
-        baikStr,
-        mendungStr,
-        hujanTinggiStr,
-        hujanRendahStr,
+        baik,
+        mendung,
+        hujanTinggi,
+        hujanRendah,
         rLapHar.rows[0].id,
       ],
     };

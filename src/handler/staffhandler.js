@@ -178,7 +178,7 @@ const updateStaff = async (req, res) => {
     const resGetUser = await pool.query(qGetUser);
     const dataGetUser = resGetUser.rows;
 
-    if (!dataGetUser.length || dataGetUser[0].role !== 'admin') {
+    if (!dataGetUser.length || dataGetUser[0].role !== 'staff') {
       throw new InvariantError('Gagal mengubah data staff. Akun ini bukan role staff atau akun tidak ditemukan');
     }
 
