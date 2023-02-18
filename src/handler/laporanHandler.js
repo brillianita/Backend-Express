@@ -37,7 +37,7 @@ const resLap = (data) => {
     month: 'short',
     day: 'numeric',
   };
-  const objData = data.map((obj) => (typeof (obj.id) === 'number' ? {
+  let objData = data.map((obj) => (typeof (obj.id) === 'number' ? {
     ...obj,
     file: {
       download: `${baseUrl}download/${obj.file}`,
@@ -46,6 +46,15 @@ const resLap = (data) => {
     created_at: (obj.created_at).toLocaleString('id-ID', options),
   } : obj));
 
+  objData = objData.map((obj) => (!obj.catatan ? {
+    ...obj,
+    catatan: '-',
+  } : obj));
+
+  objData = objData.map((obj) => (obj.urutan_lap ? {
+    ...obj,
+    jenis_laporan: `${obj.jenis_laporan} ke-${obj.urutan_lap}`,
+  } : obj));
   return objData;
 };
 
