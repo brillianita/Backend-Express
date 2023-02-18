@@ -10,6 +10,7 @@ router.get('/laporan/:noProyek', laporanHandler.getLaporanByNoProyekKont);
 router.post('/laporan/tambah', uploadFile.upload.single('file'), laporanHandler.createLaporan);
 router.post('/lapHarian/tambah', laporanHandler.createLapHarian);
 router.get('/detailLaporan/:id', laporanHandler.getLaporanDetail);
+router.get('/detaillapHarian/:id', laporanHandler.getDetailLapHarian);
 router.put('/laporan/edit/:id', uploadFile.upload.single('file'), laporanHandler.updateLaporan);
 
 // STAFF OR ADMIN FEATURE
