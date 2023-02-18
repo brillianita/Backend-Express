@@ -54,6 +54,71 @@ const getProgress = async (req, res) => {
   }
 };
 
+const getListProyekByProgress = async (req, res) => {
+  try {
+    const { idUser } = req.query;
+
+    let queryGetLeading;
+    let queryGetLate;
+    let queryGetOnTrack;
+
+    if (idUser) {
+      queryGetLeading = {
+        text: "SELECT nm_proyek, nm_rekanan FROM data as d INNER JOIN kontraktor_conn as k ON d.id_datum = k.id_datum WHERE LOWER(d.progress) = 'leading' AND k.id_user= $1;",
+        values: [idUser],
+      };
+      queryGetLate = {
+        text: "SELECT nm_proyek, nm_rekanan FROM data as d INNER JOIN kontraktor_conn as k ON d.id_datum = k.id_datum WHERE LOWER(d.progress) = 'late' AND k.id_user= $1;",
+        values: [idUser],
+      };
+      queryGetOnTrack = {
+        text: "SELECT nm_proyek, nm_rekanan FROM data as d INNER JOIN kontraktor_conn as k ON d.id_datum = k.id_datum WHERE LOWER(d.progress) = 'on track' AND k.id_user= $1;",
+        values: [idUser],
+      };
+    } else {
+      queryGetLeading = {
+        text: "SELECT id_datum, nm_proyek, nm_rekanan FROM data as d WHERE LOWER(d.progress) = 'leading';",
+      };
+      queryGetLate = {
+        text: "SELECT id_datum, nm_proyek, nm_rekanan FROM data as d WHERE LOWER(d.progress) = 'late';",
+      };
+      queryGetOnTrack = {
+        text: "SELECT id_datum, nm_proyek, nm_rekanan FROM data as d WHERE LOWER(d.progress) = 'on track';",
+      };
+    }
+    const poolLeading = await pool.query(queryGetLeading);
+    const poolLate = await pool.query(queryGetLate);
+    const poolOnTrack = await pool.query(queryGetOnTrack);
+
+    const leading = poolLeading.rows;
+    const late = poolLate.rows;
+    const onTrack = poolOnTrack.rows;
+
+    return res.status(200).send({
+      status: 'success',
+      data: {
+        leading,
+        late,
+        onTrack,
+      },
+    });
+  } catch (e) {
+    console.log(e);
+
+    if (e instanceof ClientError) {
+      return res.status(400).send({
+        status: 'fail',
+        message: e.message,
+      });
+    }
+
+    return res.status(500).send({
+      status: 'error',
+      message: 'Gagal mengambil data',
+    });
+  }
+};
+
 const getStatistikbyDataStatus = async (req, res) => {
   try {
     const { tahun, idUser } = req.query;
@@ -311,4 +376,5 @@ module.exports = {
   getStatistikPrKonstruksi,
   getStatistikPko,
   getProgress,
+  getListProyekByProgress,
 };
