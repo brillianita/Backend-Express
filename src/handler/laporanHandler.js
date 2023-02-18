@@ -59,7 +59,7 @@ const createLaporan = async (req, res) => {
       throw new NotFoundError('Pengguna tidak ditemukan atau tidak memiliki role kontraktor');
     }
 
-    const createdAt = new Date(new Date().setHours(0, 0, 0, 0));
+    const createdAt = new Date().toJSON().slice(0, 10).replace(/-/g, '/');
     const query = {
       text: `INSERT INTO laporan (id, jenis_laporan, urutan_lap, file, created_at, catatan, status, id_datum, id_user) VALUES (DEFAULT, '${jenisLaporan}', '${urutanLap}', '${namaFile}', '${createdAt}', null, 'Ditinjau', '${resQId.rows[0].id_datum}', '${idUser}') RETURNING *;`,
     };
