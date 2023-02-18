@@ -8,5 +8,7 @@ router.get('/stat/planactual/:id_datum', dashboardHandler.getStatistikPlanVsActu
 router.get('/stat/monPr', dashboardHandler.getStatistikMonPr);
 router.get('/stat/picpr', dashboardHandler.getStatistikPrKonstruksi);
 router.get('/stat/pko', dashboardHandler.getStatistikPko);
+router.get('/stat/progress', dashboardHandler.getProgress);
+router.get('/stat/progress/listproyek', dashboardHandler.getListProyekByProgress);
 
 module.exports = router;
