@@ -585,7 +585,7 @@ const getDetailLapHarian = async (req, res) => {
       values: [id],
     };
     const poolInfoLH = await pool.query(queryGetInfoLH);
-    const infoLH = poolInfoLH.rows[0];
+    let infoLH = poolInfoLH.rows[0];
 
     const queryGetDescLH = {
       text: 'SELECT lh.id as id_lapharian, lh.aktivitas as aktivitas, lh.rencana as rencana, lh.note as note FROM lap_harian as lh INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY lh.id',
@@ -595,50 +595,70 @@ const getDetailLapHarian = async (req, res) => {
     const descLH = poolDescLH.rows[0];
 
     const queryGetTenaKer = {
-      text: "SELECT tk.id, tk.jabatan, tk.jmlh FROM tenaga_kerja as tk INNER JOIN lap_harian as lh ON tk.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 AND tk.status_hari = 'hari ini' ORDER BY tk.id",
+      // eslint-disable-next-line max-len
+      // text: "SELECT tk.id, tk.jabatan, tk.jmlh FROM tenaga_kerja as tk INNER JOIN lap_harian as lh ON tk.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 AND tk.status_hari = 'hari ini' ORDER BY tk.id",
+      text: "SELECT ARRAY_AGG(id) as id_tdy, ARRAY_AGG(jabatan) as jabatan_tdy, ARRAY_AGG(jmlh) as qty_tdy FROM(SELECT tk.id, tk.jabatan, tk.jmlh FROM tenaga_kerja as tk INNER JOIN lap_harian as lh ON tk.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 AND tk.status_hari = 'hari ini' ORDER BY tk.id)sub;",
       values: [id],
     };
+
     const queryGetTenaKerB = {
-      text: "SELECT tk.id, tk.jabatan, tk.jmlh FROM tenaga_kerja as tk INNER JOIN lap_harian as lh ON tk.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 AND tk.status_hari = 'besok' ORDER BY tk.id",
+      // eslint-disable-next-line max-len
+      // text: "SELECT tk.id, tk.jabatan, tk.jmlh FROM tenaga_kerja as tk INNER JOIN lap_harian as lh ON tk.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 AND tk.status_hari = 'besok' ORDER BY tk.id",
+      text: "SELECT ARRAY_AGG(id) as id_bsk, ARRAY_AGG(jabatan) as jabatan_bsk, ARRAY_AGG(jmlh) as qty_bsk FROM(SELECT tk.id, tk.jabatan, tk.jmlh FROM tenaga_kerja as tk INNER JOIN lap_harian as lh ON tk.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 AND tk.status_hari = 'besok' ORDER BY tk.id)sub;",
       values: [id],
     };
     const poolTenaKer = await pool.query(queryGetTenaKer);
     const poolTenaKerB = await pool.query(queryGetTenaKerB);
 
     const queryGetAlatKerja = {
-      text: 'SELECT ak.id, ak.alat, ak.qty FROM alat_kerja as ak INNER JOIN lap_harian as lh ON ak.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY ak.id',
+      // eslint-disable-next-line max-len
+      // text: 'SELECT ak.id, ak.alat, ak.qty FROM alat_kerja as ak INNER JOIN lap_harian as lh ON ak.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY ak.id',
+      text: 'SELECT ARRAY_AGG(id) as id_alat, ARRAY_AGG(alat) as alat, ARRAY_AGG(qty) as qty_alat FROM(SELECT ak.id, ak.alat, ak.qty FROM alat_kerja as ak INNER JOIN lap_harian as lh ON ak.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY ak.id)sub',
       values: [id],
     };
     const poolAlatKerja = await pool.query(queryGetAlatKerja);
 
     const queryGetNote = {
-      text: 'SELECT n.id, n.masalah, n.solusi FROM note as n INNER JOIN lap_harian as lh ON n.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY n.id',
+      // eslint-disable-next-line max-len
+      // text: 'SELECT n.id, n.masalah, n.solusi FROM note as n INNER JOIN lap_harian as lh ON n.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY n.id',
+      text: 'SELECT ARRAY_AGG(id) as id_massol, ARRAY_AGG(masalah) as masalah, ARRAY_AGG(solusi) as solusi FROM (SELECT n.id, n.masalah, n.solusi FROM note as n INNER JOIN lap_harian as lh ON n.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY n.id)sub;',
       values: [id],
     };
     const poolNote = await pool.query(queryGetNote);
 
     const queryGetCuaca = {
-      text: 'SELECT c.id, c.baik, c.mendung, c.hujan_tinggi, c.hujan_rendah FROM kond_cuaca as c INNER JOIN lap_harian as lh ON c.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY c.id',
+      text: 'SELECT c.id as id_cuaca, c.baik, c.mendung, c.hujan_tinggi, c.hujan_rendah FROM kond_cuaca as c INNER JOIN lap_harian as lh ON c.id_lap_harian = lh.id INNER JOIN laporan as l ON l.id = lh.id_laporan WHERE l.id = $1 ORDER BY c.id',
       values: [id],
     };
     const poolCuaca = await pool.query(queryGetCuaca);
 
-    // const coba = {
-    //   text: 'SELECT'
-    // }
+    // descLH.tkToday = poolTenaKer.rows;
+    // descLH.tkTomorrow = poolTenaKerB.rows;
+    // descLH.alatKerja = poolAlatKerja.rows;
+    // descLH.trouble = poolNote.rows;
+    // descLH.cuaca = poolCuaca.rows;
 
-    descLH.tkToday = poolTenaKer.rows;
-    descLH.tkTomorrow = poolTenaKerB.rows;
-    descLH.alatKerja = poolAlatKerja.rows;
-    descLH.note = poolNote.rows;
-    descLH.cuaca = poolCuaca.rows;
+    // descLH = { ...descLH, ...poolTenaKer.rows[0], ...poolTenaKerB.rows[0] };
+
+    infoLH = {
+      ...infoLH,
+      ...poolDescLH.rows[0],
+      ...poolTenaKer.rows[0],
+      ...poolTenaKerB.rows[0],
+      ...poolAlatKerja.rows[0],
+      ...poolNote.rows[0],
+      ...poolCuaca.rows[0],
+    };
+
+    // return res.status(200).send({
+    //   status: 'success',
+    //   data: infoLH,
+    //   // descLH,
+    // });
 
     return res.status(200).send({
       status: 'success',
-      data: {
-        infoLH,
-        descLH,
-      },
+      data: infoLH,
     });
   } catch (e) {
     console.error(e);
